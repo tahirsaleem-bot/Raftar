@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WhatsApp QR - Raftar</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+        }
+        h1 {
+            color: #25d366;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        .qr-box {
+            background: #f5f5f5;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            line-height: 1;
+            font-family: monospace;
+            font-size: 10px;
+            overflow-x: auto;
+            color: #000;
+            white-space: pre;
+        }
+        .steps {
+            text-align: left;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+        .steps h3 {
+            color: #25d366;
+            margin-bottom: 15px;
+        }
+        .steps ol {
+            margin-left: 20px;
+            color: #555;
+            line-height: 1.8;
+        }
+        .steps li {
+            margin-bottom: 10px;
+        }
+        .status {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 WhatsApp Scan</h1>
+        <p class="subtitle">Scan QR code se apne phone ko link karo</p>
+
+        <div class="qr-box">█▄▄▄▄▄█▀ ██▀▄█▀  ▀▀ █▀ ▀█▀▄▀▄ ▀██▄▄█
+█   ▄█ █▀▀  ███▄▄█▀ █ █▀▀ ▄ █▀▀▄█ ▄█
+█▀▄▀▄██▀  █▀  ▄▀▀ █ ▀  ▄▄▄ ▀█▄ ██ ▀█
+█▄ ▀▀█▄█ ▀ █▄▄▄▀▄▀▀▀▄█ █▄█ ▀▄█▀▄▀▄█
+█ ▄▄█▀▀ ▄ ▄█▄▀▀▄ ▄▄▀▀▀▄▄▄▀█▀▀██▀▀▀██
+█▀ ▀█ █▄ ▀  ▀█▀▀▄▀  █▀█▀▀█▀▄█▄▄ ▀ ██
+███████▄█▄ █▀▀▀ ▄ ▄▄▄  ▄█▄  ▀ ▄▄▄ ██
+█ ▄▄▄▄▄ █▄█▀▀▀█▀▀▄ █▄█ ▄█▀█ █ █▄█ ██
+█ █   █ █▀█▄▀█▀▄█ ▀▄▄▄▀ ▀██ ▀▄▄▄ ▀██
+█ █▄▄▄█ █▀ ▄▀ ▄▀ ▄▀ ▄██▀ ▀▄▄  ▀██ ▀▀
+█▄▄▄▄▄▄▄█▄▄█▄█▄██▄▄▄██▄█▄███▄▄▄█████</div>
+
+        <p style="color: #666; font-size: 14px; margin-top: 20px;">
+            ⚠️ <strong>Note:</strong> Ye QR code ASCII format mein hai. <br>
+            Properly scan karne ke liye below steps follow karo:
+        </p>
+
+        <div class="steps">
+            <h3>✅ Steps:</h3>
+            <ol>
+                <li><strong>Apne phone par</strong> WhatsApp open karo</li>
+                <li><strong>Menu</strong> (3 dots) → <strong>Linked Devices</strong></li>
+                <li><strong>Link a Device</strong> click karo</li>
+                <li><strong>Camera</strong> activate hoga</li>
+                <li><strong>Neeche likha QR code</strong> ko camera se point karo</li>
+                <li><strong>Scan hone ka wait karo</strong> ✅</li>
+            </ol>
+        </div>
+
+        <div class="status">
+            🔄 Scanning... Server ready hai!
+        </div>
+
+        <p style="color: #999; font-size: 12px; margin-top: 20px;">
+            Agar QR code scan nahi ho raha, tab <strong>manual entry</strong> use kro
+        </p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp QR Code</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        h1 {
+            color: #25d366;
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        p {
+            color: #555;
+            margin: 0 0 30px 0;
+            font-size: 16px;
+        }
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .steps {
+            color: #333;
+            text-align: left;
+            margin-top: 30px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .steps strong {
+            color: #25d366;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 WhatsApp Linked Devices</h1>
+        <p>Scan this QR code to link your device</p>
+
+        <div id="qrcode"></div>
+
+        <div class="steps">
+            <strong>Steps:</strong><br>
+            1. Open WhatsApp on your phone<br>
+            2. Go to Menu → Linked Devices<br>
+            3. Click "Link a Device"<br>
+            4. Point your camera at this QR code<br>
+            5. Wait for connection
+        </div>
+    </div>
+
+    <script>
+        // This will generate a sample QR code
+        // In real scenario, this would be the actual WhatsApp QR data
+        new QRCode(document.getElementById("qrcode"), {
+            text: "https://wa.me/",
+            width: 300,
+            height: 300,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    </script>
+</body>
+</html>

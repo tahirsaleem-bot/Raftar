@@ -1,0 +1,9 @@
+# Cursor Agent Rules
+
+- Always read `CLAUDE.md` first and treat it as the entry-point.
+- After every successful task, update `memory.md` with durable learnings ("close the loop").
+- When doing database work: read `docs/schema.md` first; never assume column meanings.
+- Be explicit about date ranges, filters, and assumptions before running complex queries.
+- Prefer small verification steps over large one-shot changes.
+- For calendar integrations: start read-only, expand permissions only with explicit approval and clear write intent.
+

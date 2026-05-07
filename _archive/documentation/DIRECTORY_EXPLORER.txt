@@ -1,0 +1,154 @@
+================================================================================
+                    RAFTAR KM AGENT - FINAL ORGANIZED STRUCTURE
+                                  2026-04-21
+================================================================================
+
+📦 /c/Raftar/ai-agent-starter/
+│
+├─ 📄 CLAUDE.md                        ← ★ START HERE (Project entry point)
+├─ 📄 INDEX.md                         ← ★ Navigation (Find anything)
+├─ 📄 memory.md                        ← Template (persistent memory in ~/.claude/)
+├─ 📄 index.js                         ← Express server (UNCHANGED)
+├─ 📄 package.json                     ← Dependencies (UNCHANGED)
+├─ 📄 .env                             ← Secrets (UNCHANGED, DO NOT COMMIT)
+├─ 📄 .gitignore                       ← Git rules
+│
+│
+├─ 📁 status/                          ← ★ WEEKLY OPERATIONS
+│   ├─ CURRENT.md                      (This week's focus)
+│   ├─ PENDING.md                      (Top 3 priorities)
+│   └─ RECENT.md                       (Last 5 sessions)
+│
+│
+├─ 📁 docs/                            ← REFERENCE MATERIAL
+│   ├─ README.md                       (Why this folder)
+│   ├─ SCHEMA.md                       (★ COMPLETE data structure)
+│   ├─ API.md                          (★ COMPLETE API reference)
+│   ├─ ARCHITECTURE.md                 (System design)
+│   ├─ patterns.md                     (All 15 skills overview)
+│   └─ [other docs - UNCHANGED]
+│
+│
+├─ 📁 skills/                          ← ★ SHAREABLE KNOWLEDGE (6+ Files)
+│   ├─ README.md                       (How to use skills)
+│   ├─ preview-before-action.md        (Always show before executing)
+│   ├─ free-cost-first.md              (Free > Official > Workarounds)
+│   ├─ official-apis.md                (Use documented APIs)
+│   ├─ signature.md                    (End with "Sent by Raftar")
+│   ├─ save-learnings.md               (Document lessons)
+│   ├─ whatsapp.md                     (WhatsApp integration STEP-BY-STEP)
+│   ├─ sheets.md                       (Google Sheets STEP-BY-STEP)
+│   ├─ distance.md                     (OSRM distance STEP-BY-STEP)
+│   ├─ vision.md                       (Gemini vision STEP-BY-STEP)
+│   └─ [9 more planned skills]
+│
+│
+├─ 📁 context/                         ← PROJECT BACKGROUND
+│   ├─ README.md
+│   └─ project-background.md
+│
+│
+├─ 📁 src/                             ← APPLICATION CODE (UNCHANGED ✅)
+│   ├─ whatsapp/
+│   │   └─ whatsappClient.js
+│   ├─ sheets/
+│   │   └─ logisticsClient.js
+│   ├─ routes/
+│   │   ├─ distanceCalculator.js
+│   │   ├─ processEmployeeRoutes.js
+│   │   └─ schoolsData.js
+│   ├─ scheduler/
+│   │   ├─ fpuChecker.js
+│   │   ├─ ldoChecker.js
+│   │   └─ reminderSender.js
+│   ├─ vision/
+│   │   └─ extractKM.js
+│   ├─ config/
+│   │   └─ hubGroups.js
+│   ├─ calendar/, gmail/, validation/
+│   ├─ logger.js
+│   └─ docsClient.js
+│
+│
+├─ 📁 scripts/                         ← ★ MOVED HERE (15 Scripts)
+│   ├─ README.md                       (How to use scripts)
+│   ├─ manual-fpu-fetch.js             (Manual meter check)
+│   ├─ quick-meter-fetch.js            (Quick fetch)
+│   ├─ find-groups.js                  (Discover WhatsApp groups)
+│   ├─ batch-process-routes.js         (Batch distance calc)
+│   ├─ format-sheet.js                 (Sheet formatting)
+│   ├─ add-headers.js                  (Add column headers)
+│   ├─ home_coordinates_generated.js   (Generate coords)
+│   ├─ schools_overrides_generated.js  (School overrides)
+│   ├─ test-row-2484.js                (Test row processing)
+│   ├─ verify-fix.js                   (Verify fixes)
+│   └─ [5 more scripts]
+│
+│
+├─ 📁 logs/                            ← RUNTIME LOGS (UNCHANGED ✅)
+│   └─ app.log
+│
+│
+├─ 📁 credentials/                     ← SECRETS (DO NOT COMMIT ✅)
+│   ├─ google-oauth-client.json
+│   ├─ google-token.json
+│   └─ whatsapp-session/
+│
+│
+├─ 📁 assets/                          ← STATIC FILES (UNCHANGED ✅)
+│   └─ raftar-logo.jpg
+│
+│
+├─ 📁 output/                          ← GENERATED REPORTS (UNCHANGED ✅)
+│   └─ [reports generated here]
+│
+│
+├─ 📁 _archive/                        ← ★ ORGANIZED OLD FILES
+│   ├─ README.md                       (Why archived)
+│   ├─ sessions/
+│   │   └─ session-2026-04-21-backup.md
+│   └─ [old planning & docs]
+│
+│
+└─ 📁 .claude/                         ← PERSISTENT MEMORY (System-managed ✅)
+    └─ projects/c--Raftar-ai-agent-starter/memory/
+        ├─ MEMORY.md                   (Index of memories)
+        ├─ user-profile.md
+        ├─ feedback.md
+        ├─ project-state.md
+        └─ session_log_*.md
+
+================================================================================
+                           KEY METRICS
+================================================================================
+
+Root Directory:           6 files (was 25+) ✅ Clean
+Documentation:           6 organized (was 3 overlapping) ✅ Clear
+Skills:                  6+ modular files (was 1 giant file) ✅ Shareable
+Scripts:                 In scripts/ folder (was in root) ✅ Organized
+Progressive Disclosure:  CLAUDE → INDEX → status/docs/skills → code ✅
+
+================================================================================
+                           NEXT STEPS
+================================================================================
+
+1. Read CLAUDE.md (2 min) — Get project overview
+2. Read INDEX.md (2 min) — Learn navigation
+3. Fill status/CURRENT.md — What's this week's focus?
+4. Fill status/PENDING.md — Top 3 next items?
+5. Use skills/[name].md for step-by-step guides
+6. Reference docs/SCHEMA.md for data structure
+
+================================================================================
+                        ONE-LINE SUMMARY
+================================================================================
+
+✅ Reorganized from chaos (25+ files scattered) to clarity (6 root files).
+✅ Eliminated navigation confusion (3 guides → 1 INDEX.md).
+✅ Made skills shareable (1 file → 6+ modular files).
+✅ Cleaned root directory (16 scripts → scripts/ folder).
+✅ Implemented progressive disclosure (CLAUDE → status → docs → code).
+
+Ready to use! 🚀
+
+================================================================================

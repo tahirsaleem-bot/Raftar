@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); k=list\\(d.keys\\(\\)\\); print\\('Top keys:', k\\); inner = d.get\\('installed'\\) or d.get\\('web'\\) or {}; print\\('Type:', 'installed' if 'installed' in d else 'web' if 'web' in d else 'unknown'\\); print\\('client_id:', inner.get\\('client_id','NOT FOUND'\\)\\); print\\('project_id:', inner.get\\('project_id','NOT FOUND'\\)\\); print\\('redirect_uris:', inner.get\\('redirect_uris','NOT FOUND'\\)\\); print\\('Has client_secret:', 'YES' if inner.get\\('client_secret'\\) else 'NO'\\)\")",
+      "Bash(xargs grep:*)"
+    ]
+  }
+}

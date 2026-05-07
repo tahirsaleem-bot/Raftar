@@ -1,0 +1,7 @@
+node_modules/
+.env
+logs/
+*.log
+credentials/google-token.json
+credentials/google-oauth-client.json
+credentials/whatsapp-session/
