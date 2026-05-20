@@ -1,0 +1,125 @@
+/c/Raftar/ai-agent-starter/
+
+📌 ESSENTIAL ROOT FILES (7):
+├─ CLAUDE.md                    ← Entry point (current project state)
+├─ INDEX.md                     ← Navigation (find anything)
+├─ FILL_IN_GUIDE.md            ← How to fill status/ files
+├─ memory.md                    ← Pointer to persistent memory
+├─ index.js                     ← Main Express server
+├─ package.json                 ← Dependencies
+└─ .env                         ← Secrets (DO NOT COMMIT)
+
+📁 FOLDERS (ORGANIZED):
+│
+├─ 📂 status/                   ← OPERATIONAL (Weekly updates)
+│   ├─ CURRENT.md              (This week's focus - FILL THIS)
+│   ├─ PENDING.md              (Top 3 priorities - FILL THIS)
+│   └─ RECENT.md               (Last 5 sessions)
+│
+├─ 📂 docs/                     ← REFERENCE (Complete documentation)
+│   ├─ README.md
+│   ├─ SCHEMA.md               (Data structure)
+│   ├─ API.md                  (All integrations)
+│   ├─ ARCHITECTURE.md         (System design)
+│   ├─ patterns.md             (All skills overview)
+│   └─ [other docs]
+│
+├─ 📂 skills/                   ← SHAREABLE (Working patterns)
+│   ├─ README.md
+│   ├─ whatsapp.md
+│   ├─ sheets.md
+│   ├─ distance.md
+│   ├─ vision.md
+│   ├─ preview-before-action.md
+│   └─ [more skills]
+│
+├─ 📂 src/                      ← CODE (Application logic)
+│   ├─ whatsapp/
+│   ├─ sheets/
+│   ├─ routes/
+│   ├─ scheduler/
+│   ├─ vision/
+│   ├─ config/
+│   ├─ logger.js
+│   └─ docsClient.js
+│
+├─ 📂 scripts/                  ← UTILITIES (One-off tools)
+│   ├─ README.md
+│   ├─ manual-fpu-fetch.js
+│   ├─ find-groups.js
+│   ├─ batch-process-routes.js
+│   └─ [15 total utilities]
+│
+├─ 📂 context/                  ← BACKGROUND (Why this project)
+│   ├─ README.md
+│   └─ project-background.md
+│
+├─ 📂 credentials/              ← SECRETS (OAuth, tokens)
+│   ├─ google-oauth-client.json
+│   ├─ google-token.json
+│   └─ whatsapp-session/
+│
+├─ 📂 assets/                   ← STATIC (Images, logos)
+│   └─ raftar-logo.jpg
+│
+├─ 📂 logs/                     ← RUNTIME (Error logs)
+│   └─ app.log
+│
+├─ 📂 output/                   ← REPORTS (Generated files)
+│
+├─ 📂 _archive/                 ← OLD FILES (Organized history)
+│   ├─ documentation/           (Old docs, planning files)
+│   ├─ sessions/                (Old session logs)
+│   └─ src/                     (Unused code - if archived)
+│
+├─ 📂 .claude/                  ← PERSISTENT MEMORY (System-managed)
+│   └─ projects/.../memory/
+│       ├─ MEMORY.md
+│       ├─ user-profile.md
+│       ├─ feedback.md
+│       └─ session_log_*.md
+│
+├─ 📂 node_modules/             ← NPM (Auto-generated)
+└─ 📂 .wwebjs_cache/            ← CACHE (Auto-generated)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+KEY PRINCIPLES:
+
+1. ROOT LEVEL: Only 7 essential files
+   ✅ CLAUDE.md (entry point)
+   ✅ INDEX.md (navigation)
+   ✅ FILL_IN_GUIDE.md (how to fill status files)
+   ✅ index.js (main server)
+   ✅ memory.md (memory pointer)
+   ✅ package.json (deps)
+   ✅ .env (secrets)
+
+2. ORGANIZED FOLDERS: Each has clear purpose
+   ✅ status/ (weekly operations)
+   ✅ docs/ (reference)
+   ✅ skills/ (shareable patterns)
+   ✅ src/ (code)
+   ✅ scripts/ (utilities)
+   ✅ _archive/ (history)
+
+3. NO CLUTTER:
+   ❌ No analysis docs in root
+   ❌ No old planning docs in root
+   ❌ No unnecessary files scattered
+
+4. PROGRESSIVE DISCLOSURE:
+   → Read CLAUDE.md first
+   → Use INDEX.md to find things
+   → Go to specific folder (status/docs/skills)
+   → No overwhelming choices
+
+═══════════════════════════════════════════════════════════════════════════════
+
+NEXT STEP:
+
+1. Fill status/CURRENT.md (your week's focus)
+2. Fill status/PENDING.md (top 3 priorities)
+3. Done! 100% Optimized
+
+═══════════════════════════════════════════════════════════════════════════════
