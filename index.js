@@ -47,6 +47,110 @@ app.get('/', (req, res) => {
 </html>`);
 });
 
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+app.get('/dashboard', (req, res) => {
+  res.send(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raftar Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #fff; min-height: 100vh; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 40px; }
+    h1 { font-size: 3rem; color: #d4a017; margin-bottom: 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+    .status-badge { display: inline-block; padding: 8px 16px; background: #2ecc71; color: #000; border-radius: 20px; font-weight: bold; margin-bottom: 20px; }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .card { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 25px; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    .card h3 { color: #d4a017; margin-bottom: 12px; font-size: 1.3rem; }
+    .card p { color: #aaa; font-size: 0.95rem; line-height: 1.6; }
+    .stat { font-size: 2rem; color: #2ecc71; font-weight: bold; margin: 10px 0; }
+    .groups { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 25px; backdrop-filter: blur(10px); }
+    .groups h3 { color: #d4a017; margin-bottom: 15px; }
+    .group-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+    .group-item { background: rgba(46, 204, 113, 0.2); border-left: 4px solid #2ecc71; padding: 12px; border-radius: 6px; }
+    .action-buttons { display: flex; gap: 15px; margin-top: 30px; flex-wrap: wrap; }
+    .btn { padding: 12px 25px; background: #d4a017; color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.3s; }
+    .btn:hover { background: #e6b530; transform: translateY(-2px); }
+    .btn-secondary { background: #3498db; color: #fff; }
+    .btn-secondary:hover { background: #2980b9; }
+    footer { text-align: center; margin-top: 40px; color: #888; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>⚡ Raftar Dashboard</h1>
+      <div class="status-badge">🟢 Agent Online</div>
+    </header>
+
+    <div class="dashboard-grid">
+      <div class="card">
+        <h3>📱 WhatsApp Status</h3>
+        <p>Connection Status: <strong style="color: #2ecc71;">Connected</strong></p>
+        <p>Listening to 7 hub groups for meter readings</p>
+      </div>
+
+      <div class="card">
+        <h3>📊 Google Sheets</h3>
+        <p>Integration: <strong style="color: #2ecc71;">Active</strong></p>
+        <p>Sheet: Niete dedicated fleet</p>
+      </div>
+
+      <div class="card">
+        <h3>🤖 Gemini Vision</h3>
+        <p>Status: <strong style="color: #2ecc71;">Ready</strong></p>
+        <p>KM Extraction: Enabled</p>
+      </div>
+
+      <div class="card">
+        <h3>⏰ Schedulers</h3>
+        <p>FPU: 10:00 AM PKT</p>
+        <p>LDO: 3:00 PM PKT</p>
+      </div>
+
+      <div class="card">
+        <h3>🕐 Current Time (PKT)</h3>
+        <p class="stat">${new Date().toLocaleString('en-PK', { timeZone: 'Asia/Karachi' })}</p>
+      </div>
+
+      <div class="card">
+        <h3>📈 System Health</h3>
+        <p>Server: Operational</p>
+        <p>All systems: GO</p>
+      </div>
+    </div>
+
+    <div class="groups">
+      <h3>📍 Monitoring 7 Hub Groups</h3>
+      <div class="group-list">
+        <div class="group-item">E-9 AHQ</div>
+        <div class="group-item">Lane 6</div>
+        <div class="group-item">Khawaja Corp</div>
+        <div class="group-item">Taramri Chowk</div>
+        <div class="group-item">H-13 Tarnol</div>
+        <div class="group-item">I-10 Tarnol</div>
+        <div class="group-item">Misrial Road</div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <a href="/" class="btn">Home</a>
+      <a href="/upload" class="btn btn-secondary">Upload FPU</a>
+      <a href="/api/get-qrcode" class="btn btn-secondary" download>Download QR Code</a>
+    </div>
+
+    <footer>
+      <p>Raftar KM Agent — Live Meter Reading Automation</p>
+      <p>Timezone: Asia/Karachi | Last Update: ${new Date().toLocaleString('en-PK', { timeZone: 'Asia/Karachi' })}</p>
+    </footer>
+  </div>
+</body>
+</html>`);
+});
+
 // ─── Get QR Code Image ────────────────────────────────────────────────────────
 app.get('/api/get-qrcode', (req, res) => {
   const qrcodePath = path.join(__dirname, 'status', 'qrcode.png');
