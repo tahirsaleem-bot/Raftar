@@ -34,7 +34,7 @@ function initWhatsApp() {
 
     // Save QR code as PNG image
     try {
-      const qrImagePath = path.join(__dirname, '../../qrcode.png');
+      const qrImagePath = path.join(__dirname, '../../status/qrcode.png');
       await QRCode.toFile(qrImagePath, qr, { width: 300, margin: 1 });
       logger.info(`[whatsapp] QR code saved to: ${qrImagePath}`);
       console.log(`\n✅ QR Code saved to: ${qrImagePath}`);
