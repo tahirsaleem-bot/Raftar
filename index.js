@@ -18,6 +18,7 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 // ─── Status page with logo ────────────────────────────────────────────────────
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
+const fs = require('fs');
 
 app.get('/', (req, res) => {
   res.send(`<!DOCTYPE html>
@@ -41,8 +42,19 @@ app.get('/', (req, res) => {
   <h1>Raftar</h1>
   <p><span class="dot"></span>Agent Online — ${new Date().toLocaleString('en-PK', { timeZone: 'Asia/Karachi' })}</p>
   <a href="/upload">📸 Upload FPU Reading</a>
+  <a href="/api/get-qrcode" download="whatsapp-qrcode.png">📱 Download QR Code</a>
 </body>
 </html>`);
+});
+
+// ─── Get QR Code Image ────────────────────────────────────────────────────────
+app.get('/api/get-qrcode', (req, res) => {
+  const qrcodePath = path.join(__dirname, 'qrcode.png');
+  if (fs.existsSync(qrcodePath)) {
+    res.download(qrcodePath, 'whatsapp-qrcode.png');
+  } else {
+    res.status(404).json({ success: false, error: 'QR code not generated yet. Start the server and wait for the QR code.' });
+  }
 });
 
 // ─── Health check ─────────────────────────────────────────────────────────────
@@ -435,6 +447,45 @@ app.get('/debug/groups', async (req, res) => {
   }
 });
 
+app.get('/debug/group/:groupId', async (req, res) => {
+  try {
+    const { getClient, isReady } = require('./src/whatsapp/whatsappClient');
+    const client = getClient();
+    if (!client || !isReady()) {
+      return res.json({ error: 'WhatsApp not connected' });
+    }
+
+    const groupId = req.params.groupId;
+
+    // Try direct browser Store access
+    try {
+      const result = await client.pupPage.evaluate(async (gId) => {
+        if (!window.Store) return { error: 'Store not available' };
+
+        const chat = window.Store.Chat.get(gId);
+        if (!chat) return { error: 'Chat not found' };
+
+        const allMsgs = Array.isArray(chat.msgs.models) ? chat.msgs.models : Object.values(chat.msgs.models || {});
+        const imageMessages = allMsgs.filter(m => m && m.type === 'image');
+
+        return {
+          chatName: chat.name,
+          chatId: chat.id._serialized,
+          totalMessages: allMsgs.length,
+          imageMessages: imageMessages.length,
+          latestImageTime: imageMessages.length > 0 ? new Date(imageMessages[imageMessages.length - 1].timestamp * 1000).toISOString() : null,
+        };
+      }, groupId);
+
+      res.json(result);
+    } catch (err) {
+      res.json({ error: 'Browser evaluation failed: ' + err.message, groupId });
+    }
+  } catch (err) {
+    res.json({ error: err.message, groupId: req.params.groupId });
+  }
+});
+
 // ─── Calculate routes API ─────────────────────────────────────────────────────
 app.get('/api/calculate-routes', async (req, res) => {
   try {
@@ -783,6 +834,18 @@ app.post('/api/send-coach-alert', async (req, res) => {
     }
   } catch (err) {
     logger.error('[api] Send alert error:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─── Get today's meter readings (quick check) ─────────────────────────────
+app.get('/api/today-meterings', async (req, res) => {
+  try {
+    const { getTodayMeterings } = require('./src/whatsapp/getTodayMeterings');
+    const results = await getTodayMeterings();
+    res.json({ success: true, count: results.length, readings: results });
+  } catch (err) {
+    logger.error('[api] Today meterings error:', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });

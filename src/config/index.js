@@ -13,7 +13,7 @@ module.exports = {
     model: process.env.GEMINI_MODEL || 'gemini-1.5-flash',
   },
   whatsapp: {
-    apiBaseUrl: process.env.WHATSAPP_API_URL || 'http://localhost:3001',
+    apiBaseUrl: process.env.WHATSAPP_API_URL || 'http://localhost:3000',
     webhookVerifyToken: process.env.WHATSAPP_VERIFY_TOKEN || 'test-token',
   },
   google: {

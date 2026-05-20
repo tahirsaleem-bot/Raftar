@@ -1,5 +1,8 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
+const QRCode = require('qrcode');
+const fs = require('fs');
+const path = require('path');
 const { extractKMFromImage } = require('../vision/extractKM');
 const { validateKM } = require('../validation/validateKM');
 const { writeKMRecord, recordExists, updateKMRecord } = require('../sheets/sheetsClient');
@@ -8,11 +11,12 @@ const logger = require('../logger');
 
 let client = null;
 let clientReady = false;
+let currentQRCode = null;
 
 // ─── Initialize WhatsApp Client ───────────────────────────────────────────────
 function initWhatsApp() {
   client = new Client({
-    authStrategy: new LocalAuth({ dataPath: './credentials/whatsapp-session' }),
+    authStrategy: new LocalAuth({ dataPath: './credentials/whatsapp-session-active' }),
     puppeteer: {
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
@@ -20,12 +24,23 @@ function initWhatsApp() {
   });
 
   // QR Code — scan once with your phone
-  client.on('qr', qr => {
+  client.on('qr', async qr => {
+    currentQRCode = qr;
     console.log('\n========================================');
     console.log('  Scan this QR code with WhatsApp');
     console.log('  Phone → WhatsApp → Linked Devices → Link a Device');
     console.log('========================================\n');
     qrcode.generate(qr, { small: true });
+
+    // Save QR code as PNG image
+    try {
+      const qrImagePath = path.join(__dirname, '../../qrcode.png');
+      await QRCode.toFile(qrImagePath, qr, { width: 300, margin: 1 });
+      logger.info(`[whatsapp] QR code saved to: ${qrImagePath}`);
+      console.log(`\n✅ QR Code saved to: ${qrImagePath}`);
+    } catch (err) {
+      logger.error('[whatsapp] Failed to save QR code image:', err.message);
+    }
   });
 
   client.on('authenticated', () => {
@@ -55,6 +70,7 @@ function initWhatsApp() {
   // ── Handle incoming messages ────────────────────────────────────────────────
   client.on('message', async msg => {
     try {
+      if (!msg || !msg.type) return;
       await handleMessage(msg);
     } catch (err) {
       logger.error('[whatsapp] Error handling message:', err.message);
@@ -77,8 +93,7 @@ const ALLOWED_NUMBERS = [
 
 // ─── Handle each incoming message ────────────────────────────────────────────
 async function handleMessage(msg) {
-  // Only handle image messages
-  if (msg.type !== 'image') return;
+  if (!msg || !msg.type || msg.type !== 'image') return;
 
   const chat = await msg.getChat();
   const contact = await msg.getContact();
@@ -189,4 +204,8 @@ function isReady() {
   return clientReady;
 }
 
-module.exports = { initWhatsApp, getClient, isReady };
+function getQRCode() {
+  return currentQRCode;
+}
+
+module.exports = { initWhatsApp, getClient, isReady, getQRCode };
