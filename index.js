@@ -49,7 +49,7 @@ app.get('/', (req, res) => {
 
 // ─── Get QR Code Image ────────────────────────────────────────────────────────
 app.get('/api/get-qrcode', (req, res) => {
-  const qrcodePath = path.join(__dirname, 'qrcode.png');
+  const qrcodePath = path.join(__dirname, 'status', 'qrcode.png');
   if (fs.existsSync(qrcodePath)) {
     res.download(qrcodePath, 'whatsapp-qrcode.png');
   } else {
