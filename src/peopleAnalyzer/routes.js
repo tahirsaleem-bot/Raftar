@@ -22,9 +22,33 @@ function requireAuth(req, res, next) {
   next();
 }
 
+// Admin middleware — allow only super_admin / admin.
+async function requireAdmin(req, res, next) {
+  try {
+    const acc = await logbook.getAccount(req.userName);
+    if (!acc || !['super_admin', 'admin'].includes(acc.role)) {
+      return res.status(403).json({ ok: false, error: 'Admins only' });
+    }
+    req.role = acc.role;
+    next();
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+}
+
 // Serve the web page
 router.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', '..', 'public', 'people-analyzer', 'index.html'));
+});
+
+// Who am I (name + role) — used by the UI after login/refresh.
+router.get('/api/me', requireAuth, async (req, res) => {
+  try {
+    const acc = await logbook.getAccount(req.userName);
+    res.json({ ok: true, name: req.userName, role: acc ? acc.role : 'user' });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
 });
 
 // ─── Login / register ─────────────────────────────────────────────────────────
@@ -39,14 +63,18 @@ router.post('/api/login', async (req, res) => {
 
     const existing = await logbook.getAccount(name);
     let isNew = false;
+    let role = existing ? existing.role : 'user';
     if (!existing) {
-      await logbook.createAccount(name, auth.hashPin(pin));
+      // First account ever becomes super_admin (bootstrap).
+      const count = await logbook.countAccounts();
+      role = count === 0 ? 'super_admin' : 'user';
+      await logbook.createAccount(name, auth.hashPin(pin), role);
       await logbook.ensureUserTab(name);
       isNew = true;
     } else if (!auth.verifyPin(pin, existing.pinHash)) {
       return res.status(401).json({ ok: false, error: 'Wrong PIN for this name' });
     }
-    res.json({ ok: true, token: auth.makeToken(name), name, isNew });
+    res.json({ ok: true, token: auth.makeToken(name), name, role, isNew });
   } catch (e) {
     logger.error('[pa] login error: ' + e.message);
     res.status(500).json({ ok: false, error: e.message });
@@ -115,6 +143,58 @@ router.post('/api/generate', requireAuth, async (req, res) => {
     res.json({ ok: true, ...assessment, cycle: cycle || 'all' });
   } catch (e) {
     logger.error('[pa] generate error: ' + e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// ─── Admin: user management (super_admin / admin only) ────────────────────────
+
+// List all users with their roles.
+router.get('/api/admin/users', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    res.json({ ok: true, users: await logbook.listAccounts(), myRole: req.role });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// Add a new user with an initial PIN and role.
+router.post('/api/admin/users', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    let { name, pin, role } = req.body || {};
+    name = (name || '').trim();
+    pin = (pin || '').trim();
+    role = (role || 'user').trim();
+    if (!name) return res.status(400).json({ ok: false, error: 'Name required' });
+    if (!/^\d{4,8}$/.test(pin)) return res.status(400).json({ ok: false, error: 'PIN must be 4-8 digits' });
+    if (!['user', 'admin', 'super_admin'].includes(role)) role = 'user';
+    // Only super_admin can create admins / super_admins.
+    if (role !== 'user' && req.role !== 'super_admin') {
+      return res.status(403).json({ ok: false, error: 'Only a Super Admin can assign admin roles' });
+    }
+    if (await logbook.getAccount(name)) return res.status(409).json({ ok: false, error: 'That name already exists' });
+    await logbook.createAccount(name, auth.hashPin(pin), role);
+    await logbook.ensureUserTab(name);
+    res.json({ ok: true, name, role });
+  } catch (e) {
+    logger.error('[pa] add-user error: ' + e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// Change a user's role — super_admin only.
+router.post('/api/admin/set-role', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    if (req.role !== 'super_admin') return res.status(403).json({ ok: false, error: 'Only a Super Admin can change roles' });
+    let { name, role } = req.body || {};
+    name = (name || '').trim();
+    role = (role || '').trim();
+    if (!['user', 'admin', 'super_admin'].includes(role)) return res.status(400).json({ ok: false, error: 'Invalid role' });
+    if (name.toLowerCase() === req.userName.toLowerCase()) return res.status(400).json({ ok: false, error: "You can't change your own role" });
+    const ok = await logbook.setRole(name, role);
+    if (!ok) return res.status(404).json({ ok: false, error: 'User not found' });
+    res.json({ ok: true, name, role });
+  } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
   }
 });

@@ -50,32 +50,61 @@ async function ensureAccountsTab() {
     });
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
-      range: `'${ACCOUNTS_TAB}'!A1:C1`,
+      range: `'${ACCOUNTS_TAB}'!A1:D1`,
       valueInputOption: 'RAW',
-      requestBody: { values: [['Name', 'PinHash', 'CreatedAt']] },
+      requestBody: { values: [['Name', 'PinHash', 'CreatedAt', 'Role']] },
     });
   }
 }
 
 async function getAccount(name) {
   await ensureAccountsTab();
-  const res = await api().spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `'${ACCOUNTS_TAB}'!A2:C` });
+  const res = await api().spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `'${ACCOUNTS_TAB}'!A2:D` });
   const rows = res.data.values || [];
   const i = rows.findIndex(r => (r[0] || '').trim().toLowerCase() === String(name).trim().toLowerCase());
   if (i === -1) return null;
-  return { name: rows[i][0], pinHash: rows[i][1], rowNumber: i + 2 };
+  return { name: rows[i][0], pinHash: rows[i][1], createdAt: rows[i][2] || '', role: (rows[i][3] || 'user'), rowNumber: i + 2 };
 }
 
-async function createAccount(name, pinHash) {
+// Number of existing accounts (data rows).
+async function countAccounts() {
+  await ensureAccountsTab();
+  const res = await api().spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `'${ACCOUNTS_TAB}'!A2:A` });
+  return (res.data.values || []).filter(r => (r[0] || '').trim()).length;
+}
+
+async function createAccount(name, pinHash, role = 'user') {
   await ensureAccountsTab();
   await api().spreadsheets.values.append({
     spreadsheetId: SHEET_ID,
-    range: `'${ACCOUNTS_TAB}'!A:C`,
+    range: `'${ACCOUNTS_TAB}'!A:D`,
     valueInputOption: 'USER_ENTERED',
     insertDataOption: 'INSERT_ROWS',
-    requestBody: { values: [[name, pinHash, new Date().toISOString()]] },
+    requestBody: { values: [[name, pinHash, new Date().toISOString(), role]] },
   });
-  logger.info(`[pa] Account created: ${name}`);
+  logger.info(`[pa] Account created: ${name} (${role})`);
+}
+
+// List all accounts (no hashes) for the admin panel.
+async function listAccounts() {
+  await ensureAccountsTab();
+  const res = await api().spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `'${ACCOUNTS_TAB}'!A2:D` });
+  return (res.data.values || [])
+    .filter(r => (r[0] || '').trim())
+    .map(r => ({ name: r[0], createdAt: r[2] || '', role: (r[3] || 'user') }));
+}
+
+async function setRole(name, role) {
+  const acc = await getAccount(name);
+  if (!acc) return false;
+  await api().spreadsheets.values.update({
+    spreadsheetId: SHEET_ID,
+    range: `'${ACCOUNTS_TAB}'!D${acc.rowNumber}`,
+    valueInputOption: 'RAW',
+    requestBody: { values: [[role]] },
+  });
+  logger.info(`[pa] Role set: ${name} -> ${role}`);
+  return true;
 }
 
 // Ensure a tab exists for this user; create with headers if missing.
@@ -143,5 +172,5 @@ async function listCycles(userName) {
 module.exports = {
   SHEET_ID, HEADERS, cycleLabel, safeTabName,
   listUsers, ensureUserTab, appendEntry, getEntries, listCycles,
-  getAccount, createAccount,
+  getAccount, createAccount, countAccounts, listAccounts, setRole,
 };
