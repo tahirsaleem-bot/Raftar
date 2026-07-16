@@ -231,6 +231,12 @@
           <div class="field"><label>PIN (4-8 digits)</label><input id="nuPin" inputmode="numeric" placeholder="e.g. 1234"></div>
           <div class="field" id="nuRoleWrap"><label>Role</label><select id="nuRole"><option value="user">User</option><option value="admin">Admin</option><option value="super_admin">Super Admin</option></select></div>
         </div>
+        <div class="field" id="nuSkillsWrap" style="margin-top:10px"><label>Skills (jo ye user dekh sakega)</label>
+          <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:4px">
+            <label style="font-weight:400;display:flex;align-items:center;gap:6px"><input type="checkbox" class="nuSkill" value="pa" checked> 🎙️ People Analyzer</label>
+            <label style="font-weight:400;display:flex;align-items:center;gap:6px"><input type="checkbox" class="nuSkill" value="meter"> 📟 Meter Reading</label>
+          </div>
+        </div>
         <button class="btn" id="addUserBtn" style="margin-top:12px">Add user</button>
         <span id="addUserMsg" class="sub" style="margin-left:10px"></span>
       </div>
@@ -246,9 +252,14 @@
 
 <script>
 const $=s=>document.querySelector(s);
-let TOKEN=localStorage.getItem('pa_token')||'', USER=localStorage.getItem('pa_name')||'', ROLE=localStorage.getItem('pa_role')||'user';
+let TOKEN=localStorage.getItem('pa_token')||'', USER=localStorage.getItem('pa_name')||'', ROLE=localStorage.getItem('pa_role')||'user', SKILLS=localStorage.getItem('pa_skills')||'';
+let CURVIEW='pa';
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)};
 const isAdmin=()=>ROLE==='admin'||ROLE==='super_admin';
+// Which skills this user may see. Super Admin always sees all; otherwise the
+// assigned skills (default: People Analyzer for users, both for admins).
+const allowedSkills=()=>{ if(ROLE==='super_admin') return ['pa','meter']; const s=(SKILLS||'').split(',').map(x=>x.trim()).filter(Boolean); if(s.length) return s; return ROLE==='admin'?['pa','meter']:['pa']; };
+const initialView=()=>{ const h=(location.hash||'').replace('#','').trim(); return (h==='meter'||h==='pa')?h:'pa'; };
 async function api(p,o={}){o.headers=Object.assign({},o.headers,TOKEN?{Authorization:'Bearer '+TOKEN}:{});
   const r=await fetch('/pa'+p,o); if(r.status===401){logout();throw new Error('Session expired');} return r.json();}
 function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
@@ -259,15 +270,18 @@ function applyUser(){
   $('#uAvatar').textContent=(USER||'?').split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
   const rc=$('#uRole'); const label={super_admin:'Super Admin',admin:'Admin',user:'User'}[ROLE]||'User';
   rc.textContent=label; rc.className='rolechip '+(ROLE==='super_admin'?'role-super':ROLE==='admin'?'role-admin':'role-user');
+  const allow=allowedSkills();
+  $('#nav-pa').style.display=allow.includes('pa')?'flex':'none';
+  $('#nav-meter').style.display=allow.includes('meter')?'flex':'none';
   $('#nav-users').style.display=isAdmin()?'flex':'none';
-  // Meter Reading (KM agent) skill only for admins/super admin — normal users see People Analyzer only
-  $('#nav-meter').style.display=isAdmin()?'flex':'none';
-  if(!isAdmin()) switchView('pa');
   $('#nuRoleWrap').style.display=(ROLE==='super_admin')?'block':'none';
+  $('#nuSkillsWrap').style.display=(ROLE==='super_admin')?'block':'none';
+  // If the current view isn't allowed for this user, move to their first allowed skill
+  if((CURVIEW==='pa'&&!allow.includes('pa'))||(CURVIEW==='meter'&&!allow.includes('meter'))) switchView(allow[0]||'pa');
 }
 function showApp(){$('#loginView').classList.add('hide');$('#appView').classList.remove('hide');applyUser();$('#entryDate').value=new Date().toISOString().slice(0,10);}
 function showLogin(){$('#appView').classList.add('hide');$('#loginView').classList.remove('hide');}
-function logout(){TOKEN='';USER='';ROLE='user';localStorage.clear();showLogin();}
+function logout(){TOKEN='';USER='';ROLE='user';SKILLS='';localStorage.clear();showLogin();}
 $('#logoutBtn').onclick=logout;
 $('#loginBtn').onclick=async()=>{
   const name=$('#loginName').value.trim(), pin=$('#loginPin').value.trim();
@@ -277,9 +291,9 @@ $('#loginBtn').onclick=async()=>{
   try{
     const r=await fetch('/pa/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,pin})}).then(x=>x.json());
     if(!r.ok) throw new Error(r.error);
-    TOKEN=r.token;USER=r.name;ROLE=r.role||'user';
-    localStorage.setItem('pa_token',TOKEN);localStorage.setItem('pa_name',USER);localStorage.setItem('pa_role',ROLE);
-    $('#loginMsg').textContent='';$('#loginPin').value='';showApp();switchView('pa');
+    TOKEN=r.token;USER=r.name;ROLE=r.role||'user';SKILLS=r.skills||'';
+    localStorage.setItem('pa_token',TOKEN);localStorage.setItem('pa_name',USER);localStorage.setItem('pa_role',ROLE);localStorage.setItem('pa_skills',SKILLS);
+    $('#loginMsg').textContent='';$('#loginPin').value='';showApp();switchView(initialView());
     toast(r.isNew?'Account created ✓':'Welcome back ✓');
   }catch(e){$('#loginMsg').textContent='⚠️ '+e.message;}finally{$('#loginBtn').disabled=false;}
 };
@@ -290,12 +304,19 @@ function closeSidebar(){$('#sidebar').classList.remove('open');$('#scrim').class
 $('#hamb').onclick=()=>{$('#sidebar').classList.add('open');$('#scrim').classList.remove('hide');};
 $('#scrim').onclick=closeSidebar;
 function switchView(v){
+  const allow=allowedSkills();
+  // never open a skill this user isn't allowed to see
+  if(v==='pa'&&!allow.includes('pa')) v=allow[0]||'pa';
+  if(v==='meter'&&!allow.includes('meter')) v=allow.includes('pa')?'pa':(allow[0]||'pa');
+  CURVIEW=v;
   $('#view-pa').classList.toggle('hide',v!=='pa');
   $('#view-meter').classList.toggle('hide',v!=='meter');
   $('#view-users').classList.toggle('hide',v!=='users');
   $('#nav-pa').classList.toggle('active',v==='pa');
   $('#nav-meter').classList.toggle('active',v==='meter');
   $('#topTitle').textContent=v==='users'?'Users':v==='meter'?'Meter Reading':'People Analyzer';
+  // reflect the current skill in the URL so it can be copied/shared
+  try{ if(v==='meter') history.replaceState(null,'','#meter'); else if(v==='pa') history.replaceState(null,'',location.pathname); }catch(e){}
   if(v==='users') loadUsers();
   closeSidebar();
 }
@@ -366,28 +387,43 @@ function renderAssessment(r){const s=r.summary;
 async function loadUsers(){const box=$('#usersList');box.innerHTML='<p class="sub"><span class="spin"></span>Loading...</p>';
   try{const r=await api('/api/admin/users');if(!r.ok)throw new Error(r.error);
     const canRole=ROLE==='super_admin';
-    box.innerHTML='<table class="users"><tr><th>Name</th><th>Role</th>'+(canRole?'<th></th>':'')+'</tr>'+
+    const skillLabel={pa:'People Analyzer',meter:'Meter Reading'};
+    box.innerHTML='<table class="users"><tr><th>Name</th><th>Role</th><th>Skills</th>'+(canRole?'<th></th>':'')+'</tr>'+
       r.users.map(u=>{const rl={super_admin:'Super Admin',admin:'Admin',user:'User'}[u.role]||'User';
+        const us=(u.skills||'').split(',').map(x=>x.trim()).filter(Boolean);
+        const eff=us.length?us:(u.role==='user'?['pa']:['pa','meter']);
+        let skillsCell;
+        if(u.role==='super_admin'){ skillsCell='<td class="sub">All</td>'; }
+        else if(canRole){ skillsCell=`<td><label style="font-weight:400;margin-right:12px;white-space:nowrap"><input type="checkbox" class="skillChk" data-name="${esc(u.name)}" value="pa"${eff.includes('pa')?' checked':''}> PA</label><label style="font-weight:400;white-space:nowrap"><input type="checkbox" class="skillChk" data-name="${esc(u.name)}" value="meter"${eff.includes('meter')?' checked':''}> Meter</label></td>`; }
+        else { skillsCell=`<td class="sub">${eff.map(s=>skillLabel[s]||s).join(', ')}</td>`; }
         const sel=canRole && u.name.toLowerCase()!==USER.toLowerCase()
           ? `<td><select data-name="${esc(u.name)}" class="roleSel"><option value="user"${u.role==='user'?' selected':''}>User</option><option value="admin"${u.role==='admin'?' selected':''}>Admin</option><option value="super_admin"${u.role==='super_admin'?' selected':''}>Super Admin</option></select></td>`
           : (canRole?'<td class="sub">—</td>':'');
-        return `<tr><td>${esc(u.name)}</td><td><span class="rolechip ${u.role==='super_admin'?'role-super':u.role==='admin'?'role-admin':'role-user'}">${rl}</span></td>${sel}</tr>`;}).join('')+'</table>';
+        return `<tr><td>${esc(u.name)}</td><td><span class="rolechip ${u.role==='super_admin'?'role-super':u.role==='admin'?'role-admin':'role-user'}">${rl}</span></td>${skillsCell}${sel}</tr>`;}).join('')+'</table>';
     document.querySelectorAll('.roleSel').forEach(s=>s.onchange=async()=>{
       try{const r=await api('/api/admin/set-role',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:s.dataset.name,role:s.value})});
         if(!r.ok)throw new Error(r.error);toast('Role updated ✓');loadUsers();}catch(e){toast('Failed: '+e.message);}});
+    document.querySelectorAll('.skillChk').forEach(c=>c.onchange=async()=>{
+      const nm=c.dataset.name;
+      const skills=[...document.querySelectorAll('.skillChk[data-name="'+CSS.escape(nm)+'"]:checked')].map(x=>x.value);
+      if(!skills.length){toast('Kam az kam ek skill rakhein');c.checked=true;return;}
+      try{const r=await api('/api/admin/set-skills',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:nm,skills})});
+        if(!r.ok)throw new Error(r.error);toast('Skills updated ✓');}catch(e){toast('Failed: '+e.message);loadUsers();}});
   }catch(e){box.innerHTML='<p class="sub">Error: '+e.message+'</p>';}}
 $('#addUserBtn').onclick=async()=>{
   const name=$('#nuName').value.trim(),pin=$('#nuPin').value.trim(),role=(ROLE==='super_admin'?$('#nuRole').value:'user');
+  const skills=[...document.querySelectorAll('.nuSkill:checked')].map(c=>c.value);
   if(!name){$('#addUserMsg').textContent='Enter a name';return;}
   if(!/^\d{4,8}$/.test(pin)){$('#addUserMsg').textContent='PIN must be 4-8 digits';return;}
+  if(!skills.length){$('#addUserMsg').textContent='Kam az kam ek skill choose karo';return;}
   $('#addUserBtn').disabled=true;$('#addUserMsg').innerHTML='<span class="spin"></span>Adding...';
-  try{const r=await api('/api/admin/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,pin,role})});
+  try{const r=await api('/api/admin/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,pin,role,skills})});
     if(!r.ok)throw new Error(r.error);$('#addUserMsg').textContent='';$('#nuName').value='';$('#nuPin').value='';toast('User added ✓');loadUsers();
   }catch(e){$('#addUserMsg').textContent='⚠️ '+e.message;}finally{$('#addUserBtn').disabled=false;}};
 
 /* ---------- boot ---------- */
-if(TOKEN&&USER){showApp();switchView('pa');
-  api('/api/me').then(r=>{if(r&&r.ok){ROLE=r.role||ROLE;localStorage.setItem('pa_role',ROLE);applyUser();}}).catch(()=>{});
+if(TOKEN&&USER){showApp();switchView(initialView());
+  api('/api/me').then(r=>{if(r&&r.ok){ROLE=r.role||ROLE;if(r.skills!==undefined)SKILLS=r.skills;localStorage.setItem('pa_role',ROLE);localStorage.setItem('pa_skills',SKILLS);applyUser();}}).catch(()=>{});
 }else showLogin();
 </script>
 </body>

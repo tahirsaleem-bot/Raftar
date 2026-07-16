@@ -50,20 +50,20 @@ async function ensureAccountsTab() {
     });
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
-      range: `'${ACCOUNTS_TAB}'!A1:D1`,
+      range: `'${ACCOUNTS_TAB}'!A1:E1`,
       valueInputOption: 'RAW',
-      requestBody: { values: [['Name', 'PinHash', 'CreatedAt', 'Role']] },
+      requestBody: { values: [['Name', 'PinHash', 'CreatedAt', 'Role', 'Skills']] },
     });
   }
 }
 
 async function getAccount(name) {
   await ensureAccountsTab();
-  const res = await api().spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `'${ACCOUNTS_TAB}'!A2:D` });
+  const res = await api().spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `'${ACCOUNTS_TAB}'!A2:E` });
   const rows = res.data.values || [];
   const i = rows.findIndex(r => (r[0] || '').trim().toLowerCase() === String(name).trim().toLowerCase());
   if (i === -1) return null;
-  return { name: rows[i][0], pinHash: rows[i][1], createdAt: rows[i][2] || '', role: (rows[i][3] || 'user'), rowNumber: i + 2 };
+  return { name: rows[i][0], pinHash: rows[i][1], createdAt: rows[i][2] || '', role: (rows[i][3] || 'user'), skills: (rows[i][4] || ''), rowNumber: i + 2 };
 }
 
 // Number of existing accounts (data rows).
@@ -73,25 +73,25 @@ async function countAccounts() {
   return (res.data.values || []).filter(r => (r[0] || '').trim()).length;
 }
 
-async function createAccount(name, pinHash, role = 'user') {
+async function createAccount(name, pinHash, role = 'user', skills = '') {
   await ensureAccountsTab();
   await api().spreadsheets.values.append({
     spreadsheetId: SHEET_ID,
-    range: `'${ACCOUNTS_TAB}'!A:D`,
+    range: `'${ACCOUNTS_TAB}'!A:E`,
     valueInputOption: 'USER_ENTERED',
     insertDataOption: 'INSERT_ROWS',
-    requestBody: { values: [[name, pinHash, new Date().toISOString(), role]] },
+    requestBody: { values: [[name, pinHash, new Date().toISOString(), role, skills]] },
   });
-  logger.info(`[pa] Account created: ${name} (${role})`);
+  logger.info(`[pa] Account created: ${name} (${role}) skills=[${skills}]`);
 }
 
 // List all accounts (no hashes) for the admin panel.
 async function listAccounts() {
   await ensureAccountsTab();
-  const res = await api().spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `'${ACCOUNTS_TAB}'!A2:D` });
+  const res = await api().spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `'${ACCOUNTS_TAB}'!A2:E` });
   return (res.data.values || [])
     .filter(r => (r[0] || '').trim())
-    .map(r => ({ name: r[0], createdAt: r[2] || '', role: (r[3] || 'user') }));
+    .map(r => ({ name: r[0], createdAt: r[2] || '', role: (r[3] || 'user'), skills: (r[4] || '') }));
 }
 
 async function setRole(name, role) {
@@ -104,6 +104,20 @@ async function setRole(name, role) {
     requestBody: { values: [[role]] },
   });
   logger.info(`[pa] Role set: ${name} -> ${role}`);
+  return true;
+}
+
+// Set which skills a user can see (comma-separated: 'pa','meter'). Column E.
+async function setSkills(name, skills) {
+  const acc = await getAccount(name);
+  if (!acc) return false;
+  await api().spreadsheets.values.update({
+    spreadsheetId: SHEET_ID,
+    range: `'${ACCOUNTS_TAB}'!E${acc.rowNumber}`,
+    valueInputOption: 'RAW',
+    requestBody: { values: [[skills]] },
+  });
+  logger.info(`[pa] Skills set: ${name} -> [${skills}]`);
   return true;
 }
 
@@ -172,5 +186,5 @@ async function listCycles(userName) {
 module.exports = {
   SHEET_ID, HEADERS, cycleLabel, safeTabName,
   listUsers, ensureUserTab, appendEntry, getEntries, listCycles,
-  getAccount, createAccount, countAccounts, listAccounts, setRole,
+  getAccount, createAccount, countAccounts, listAccounts, setRole, setSkills,
 };

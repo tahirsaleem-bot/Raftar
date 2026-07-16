@@ -45,7 +45,7 @@ router.get('/', (req, res) => {
 router.get('/api/me', requireAuth, async (req, res) => {
   try {
     const acc = await logbook.getAccount(req.userName);
-    res.json({ ok: true, name: req.userName, role: acc ? acc.role : 'user' });
+    res.json({ ok: true, name: req.userName, role: acc ? acc.role : 'user', skills: acc ? acc.skills : '' });
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
   }
@@ -64,17 +64,19 @@ router.post('/api/login', async (req, res) => {
     const existing = await logbook.getAccount(name);
     let isNew = false;
     let role = existing ? existing.role : 'user';
+    let skills = existing ? existing.skills : '';
     if (!existing) {
       // First account ever becomes super_admin (bootstrap).
       const count = await logbook.countAccounts();
       role = count === 0 ? 'super_admin' : 'user';
-      await logbook.createAccount(name, auth.hashPin(pin), role);
+      skills = role === 'user' ? 'pa' : '';
+      await logbook.createAccount(name, auth.hashPin(pin), role, skills);
       await logbook.ensureUserTab(name);
       isNew = true;
     } else if (!auth.verifyPin(pin, existing.pinHash)) {
       return res.status(401).json({ ok: false, error: 'Wrong PIN for this name' });
     }
-    res.json({ ok: true, token: auth.makeToken(name), name, role, isNew });
+    res.json({ ok: true, token: auth.makeToken(name), name, role, skills, isNew });
   } catch (e) {
     logger.error('[pa] login error: ' + e.message);
     res.status(500).json({ ok: false, error: e.message });
@@ -161,7 +163,7 @@ router.get('/api/admin/users', requireAuth, requireAdmin, async (req, res) => {
 // Add a new user with an initial PIN and role.
 router.post('/api/admin/users', requireAuth, requireAdmin, async (req, res) => {
   try {
-    let { name, pin, role } = req.body || {};
+    let { name, pin, role, skills } = req.body || {};
     name = (name || '').trim();
     pin = (pin || '').trim();
     role = (role || 'user').trim();
@@ -172,10 +174,16 @@ router.post('/api/admin/users', requireAuth, requireAdmin, async (req, res) => {
     if (role !== 'user' && req.role !== 'super_admin') {
       return res.status(403).json({ ok: false, error: 'Only a Super Admin can assign admin roles' });
     }
+    // Normalise assigned skills (default People Analyzer).
+    const ALLOWED = ['pa', 'meter'];
+    let skillsArr = Array.isArray(skills) ? skills : (typeof skills === 'string' ? skills.split(',') : []);
+    skillsArr = skillsArr.map(s => String(s).trim()).filter(s => ALLOWED.includes(s));
+    if (!skillsArr.length) skillsArr = ['pa'];
+    const skillsStr = skillsArr.join(',');
     if (await logbook.getAccount(name)) return res.status(409).json({ ok: false, error: 'That name already exists' });
-    await logbook.createAccount(name, auth.hashPin(pin), role);
+    await logbook.createAccount(name, auth.hashPin(pin), role, skillsStr);
     await logbook.ensureUserTab(name);
-    res.json({ ok: true, name, role });
+    res.json({ ok: true, name, role, skills: skillsStr });
   } catch (e) {
     logger.error('[pa] add-user error: ' + e.message);
     res.status(500).json({ ok: false, error: e.message });
@@ -194,6 +202,24 @@ router.post('/api/admin/set-role', requireAuth, requireAdmin, async (req, res) =
     const ok = await logbook.setRole(name, role);
     if (!ok) return res.status(404).json({ ok: false, error: 'User not found' });
     res.json({ ok: true, name, role });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// Change which skills a user can see — super_admin only.
+router.post('/api/admin/set-skills', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    if (req.role !== 'super_admin') return res.status(403).json({ ok: false, error: 'Only a Super Admin can change skills' });
+    let { name, skills } = req.body || {};
+    name = (name || '').trim();
+    const ALLOWED = ['pa', 'meter'];
+    let arr = Array.isArray(skills) ? skills : (typeof skills === 'string' ? skills.split(',') : []);
+    arr = arr.map(s => String(s).trim()).filter(s => ALLOWED.includes(s));
+    if (!arr.length) return res.status(400).json({ ok: false, error: 'Select at least one skill' });
+    const ok = await logbook.setSkills(name, arr.join(','));
+    if (!ok) return res.status(404).json({ ok: false, error: 'User not found' });
+    res.json({ ok: true, name, skills: arr.join(',') });
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
   }

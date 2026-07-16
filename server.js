@@ -9,8 +9,15 @@ app.use(express.json());
 // Mount the People Analyzer app at /pa
 app.use('/pa', require('./src/peopleAnalyzer/routes'));
 
+// Raftar dashboard (static page) at /dashboard
+app.use('/', require('./src/dashboard'));
+
 // Convenience: root redirects to /pa
 app.get('/', (req, res) => res.redirect('/pa'));
+
+// Clean shareable links for each skill (open the SPA on that view)
+app.get('/meter', (req, res) => res.redirect('/pa#meter'));
+app.get('/people-analyzer', (req, res) => res.redirect('/pa'));
 
 // Health check (Railway/Render)
 app.get('/health', (req, res) => res.json({ ok: true }));
