@@ -136,8 +136,8 @@
       <div class="skill active" id="nav-pa" data-view="pa">
         <div class="ic">🎙️</div><div class="nm">People Analyzer</div><div class="dot" title="Live"></div>
       </div>
-      <div class="skill soon" id="nav-meter">
-        <div class="ic">📟</div><div class="nm">Meter Reading Automation</div><span class="badge">Soon</span>
+      <div class="skill" id="nav-meter" data-view="meter">
+        <div class="ic">📟</div><div class="nm">Meter Reading Automation</div><div class="dot" title="Live"></div>
       </div>
     </div>
     <div class="side-foot">
@@ -203,11 +203,20 @@
       </section>
     </div>
 
-    <!-- VIEW: Meter Reading (coming soon) -->
+    <!-- VIEW: Meter Reading (live) -->
     <div class="content hide" id="view-meter">
-      <div class="empty"><div class="big">📟</div>
-        <h2 class="page-title">Meter Reading Automation</h2>
-        <p class="page-sub">Coming soon — automated meter/odometer reading capture and reporting.</p>
+      <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <h2 class="page-title">Meter Reading Automation</h2>
+          <p class="page-sub">Live — WhatsApp se meter/odometer photos read kar ke Google Sheet mein log hoti hain.</p>
+        </div>
+        <a class="btn" href="https://raftar-km-agent-production.up.railway.app/dashboard" target="_blank" rel="noopener" style="flex:0 0 auto;text-decoration:none">Open full dashboard ↗</a>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <iframe src="https://raftar-km-agent-production.up.railway.app/dashboard"
+                title="Meter Reading Dashboard"
+                style="width:100%;height:72vh;border:0;display:block"
+                loading="lazy"></iframe>
       </div>
     </div>
 
@@ -282,6 +291,7 @@ function switchView(v){
   $('#view-meter').classList.toggle('hide',v!=='meter');
   $('#view-users').classList.toggle('hide',v!=='users');
   $('#nav-pa').classList.toggle('active',v==='pa');
+  $('#nav-meter').classList.toggle('active',v==='meter');
   $('#topTitle').textContent=v==='users'?'Users':v==='meter'?'Meter Reading':'People Analyzer';
   if(v==='users') loadUsers();
   closeSidebar();
