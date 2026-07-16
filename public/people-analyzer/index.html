@@ -260,6 +260,9 @@ function applyUser(){
   const rc=$('#uRole'); const label={super_admin:'Super Admin',admin:'Admin',user:'User'}[ROLE]||'User';
   rc.textContent=label; rc.className='rolechip '+(ROLE==='super_admin'?'role-super':ROLE==='admin'?'role-admin':'role-user');
   $('#nav-users').style.display=isAdmin()?'flex':'none';
+  // Meter Reading (KM agent) skill only for admins/super admin — normal users see People Analyzer only
+  $('#nav-meter').style.display=isAdmin()?'flex':'none';
+  if(!isAdmin()) switchView('pa');
   $('#nuRoleWrap').style.display=(ROLE==='super_admin')?'block':'none';
 }
 function showApp(){$('#loginView').classList.add('hide');$('#appView').classList.remove('hide');applyUser();$('#entryDate').value=new Date().toISOString().slice(0,10);}
