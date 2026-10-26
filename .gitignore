@@ -6,3 +6,7 @@ node_modules
 # exit interviews, including named allegations.
 data/
 *.pdf
+
+# Working files the local drafting routine writes while posting results.
+auto/triage_*.json
+auto/record_*.json
