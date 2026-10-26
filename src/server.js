@@ -150,6 +150,11 @@ app.get('/api/status/render', guard, async (_req, res) => res.json(await render.
 // Everything filed, for the question "how many exit interviews have we done". Read from
 // Drive, so it covers the ones handled before this app existed.
 // Records an interview that was held and written up outside the app.
+// Throws away a case that was never a resignation. Refused once a record exists.
+app.delete('/api/cases/:id', guard, (req, res) => {
+  try { res.json(engine.discard(req.params.id)); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
 app.post('/api/cases/:id/filed', guard, async (req, res) => {
   try { res.json(await engine.markFiled(req.params.id, req.body || {})); }
   catch (e) { res.status(400).json({ error: e.message }); }

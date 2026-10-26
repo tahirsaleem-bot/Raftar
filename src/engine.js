@@ -156,10 +156,29 @@ const ASKS_FOR_ONE = /\b(exit\s*interview|offboard(ing)?\s+(call|session|intervi
 // somebody whose interview is already filed.
 const OUR_OWN_RECORD = /^\s*((re|fwd|fw)\s*:\s*)*exit interview record\b/i;
 
+// The subjects this app writes. Belt and braces behind the header: it catches the ones
+// already sitting in the mailbox from before the header existed, and the case where one of
+// our mails comes back as a forward with the header stripped.
+const AGENT_SUBJECTS = new RegExp('^\\s*((re|fwd|fw)\\s*:\\s*)*(' + [
+  'exit interview to schedule',
+  'exit interview record ready',
+  'exit interview record\\b',
+  'exit interview agent (has stopped working|is working again)',
+  'someone is guessing the exit interview pin',
+].join('|') + ')', 'i');
+
 // Read a generous slice of the body: on a forward the leaver's own words sit below the
 // covering note, and on a long thread below the quoted history.
 function looksLikeResignation(msg) {
+  // Anything this app sent. Its nudges and alerts land in the same mailbox it watches and
+  // carry wording like "Exit interview to schedule", so without this the app reads its own
+  // post, opens a case, nudges about it, and opens another - which is exactly what
+  // happened. The header is set on everything we send, so this covers alerts and anything
+  // added later, not just the messages that caused it.
+  if (msg.fromAgent) return false;
+  // Records sent before the header existed, and our own mail quoted back by someone else.
   if (OUR_OWN_RECORD.test(msg.subject || '')) return false;
+  if (AGENT_SUBJECTS.test(msg.subject || '')) return false;
   if (SUBJECT_SAYS.test(msg.subject || '')) return true;
   const body = String(msg.body || '').slice(0, 12000);
   return BODY_SAYS.test(body) || ASKS_FOR_ONE.test(body);
@@ -558,6 +577,24 @@ function purgeRawContent(id) {
   store.log(id, 'Notetaker summaries and message bodies cleared - the filed record is the record now');
 }
 
+// A case that should never have been opened: the app reading its own post, or a thread
+// that turned out not to be a resignation at all. Dismissing leaves it in the list and in
+// the counts, which is right for a real resignation nobody wants an interview about and
+// wrong for noise.
+//
+// Refused once a record exists. By then it is an HR document, and whether it is kept is
+// not a question this button should be able to answer.
+function discard(id) {
+  const c = store.get(id);
+  if (!c) throw new Error('No such case');
+  if (c.record || c.drive) {
+    throw new Error('A record has been written for this case - it cannot be thrown away here');
+  }
+  const name = c.leaver?.name || c.request?.subject || id;
+  if (!store.remove(id)) throw new Error('Nothing was removed');
+  return { removed: true, id, was: name };
+}
+
 // An interview that was held and written up outside this app. Three were - Naveera, Sara
 // and Hamza, all before it existed - and the only thing the app could be told about them
 // was "dismissed", which reads as though nothing happened. This records what actually did:
@@ -951,5 +988,5 @@ function summary() {
 module.exports = {
   scanRequests, scanNotes, sendInvite, draft, applyRecord, publish, dismiss, reopen, recipientFor, pollAll, summary,
   agentTasks, applyAgentResult, STAGE_LABEL, looksLikeResignation, editRecord, register, markFiled,
-  healthSummary, alertPinAttack,
+  healthSummary, alertPinAttack, discard,
 };

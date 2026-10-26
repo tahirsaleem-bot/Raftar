@@ -667,8 +667,12 @@ function card(c) {
   }
 
   if (c.stage !== 'done') {
+    // Two different things. Dismiss closes a real resignation nobody wants an interview
+    // about, and it stays in the list. Remove is for noise - something that was never a
+    // resignation - and it goes entirely. Only offered while no record exists.
     h.push(`<div class="actions" style="margin-top:var(--sp-2)">
-      <button class="btn btn-quiet" onclick="dismiss('${c.id}')">Dismiss this case</button></div>`);
+      <button class="btn btn-quiet" onclick="dismiss('${c.id}')">Dismiss this case</button>
+      <button class="btn btn-quiet" onclick="discard('${c.id}')">Not a resignation &mdash; remove</button></div>`);
   } else if (c.dismissed) {
     h.push(`<div class="actions"><button class="btn btn-ghost" onclick="reopen('${c.id}',this)">
       ${ICON.undo}<span>Reopen this case</span></button></div>`);
@@ -968,6 +972,20 @@ async function reopen(id, btn) {
     try { await api(`/api/cases/${id}/reopen`, { method:'POST', body:'{}' }); toast('Case reopened'); await refresh(); }
     catch (e) { fail(id, e); }
   });
+}
+
+function discard(id) {
+  confirmSheet('Remove this case?',
+    'It disappears from the list and the counts, as though it had never been picked up. '
+    + 'For something that was never a resignation. A case that already has a record cannot '
+    + 'be removed this way.',
+    'Remove',
+    async () => {
+      try {
+        await api(`/api/cases/${id}`, { method:'DELETE' });
+        toast('Removed'); await refresh();
+      } catch (e) { fail(id, e); }
+    });
 }
 
 function dismiss(id) {

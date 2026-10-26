@@ -3,6 +3,9 @@
 // need is small, and it keeps the container light.
 const cfg = require('./config');
 
+// Header the app puts on every message it sends, and refuses to act on when it reads one.
+const AGENT_HEADER = 'X-Raftar-Agent';
+
 let accessToken = null;
 let expiresAt = 0;
 
@@ -119,6 +122,8 @@ async function message(id) {
     id, threadId: m.threadId,
     from: h.from || '', to: h.to || '', subject: h.subject || '',
     date: h.date || '', messageId: h['message-id'] || '',
+    // Set when this app sent the message; the trigger uses it to ignore its own mail.
+    fromAgent: !!h[AGENT_HEADER.toLowerCase()],
     body,
   };
 }
@@ -155,6 +160,12 @@ async function send({ to, cc, subject, html, threadId, inReplyTo, attachments = 
   const headers = [
     `From: ${cfg.SENDER_NAME} <${cfg.SENDER_EMAIL}>`,
     `To: ${to}`,
+    // Stamps everything this app sends. The nudges and alerts go to Tahir's own mailbox
+    // and say things like "Exit interview to schedule", which the trigger read as a fresh
+    // resignation - so the app opened a case, which sent another nudge, which opened
+    // another case. Marking our own mail is the general fix; matching on subjects would
+    // only hold until the next message type is added.
+    `${AGENT_HEADER}: exit-interview`,
     cc ? `Cc: ${cc}` : null,
     `Subject: ${subject}`,
     inReplyTo ? `In-Reply-To: ${inReplyTo}` : null,
@@ -278,6 +289,7 @@ async function checkDrive() {
 }
 
 module.exports = {
+  AGENT_HEADER,
   token, profile, assertSender,
   search, message, thread, send,
   createInvite,

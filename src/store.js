@@ -61,4 +61,19 @@ function markSeen(messageId) {
 const pdfPath = id => path.join(PDF_DIR, `${id}.pdf`);
 const htmlPath = id => path.join(PDF_DIR, `${id}.html`);
 
-module.exports = { all, get, save, update, log, seen, markSeen, pdfPath, htmlPath, ensure };
+
+// Removing a case outright, for one that should never have been opened. Dismissing is
+// for a real resignation nobody wants an interview about; this is for noise - the app
+// reading its own post, a thread that was never a resignation. The caller decides what
+// is safe to remove; the store only does it.
+function remove(id) {
+  const db = read();
+  const before = db.cases.length;
+  db.cases = db.cases.filter(c => c.id !== id);
+  write(db);
+  for (const p of [pdfPath(id), htmlPath(id)]) {
+    try { if (fs.existsSync(p)) fs.unlinkSync(p); } catch { /* nothing to clean up */ }
+  }
+  return before !== db.cases.length;
+}
+module.exports = { all, get, save, update, log, remove, seen, markSeen, pdfPath, htmlPath, ensure };
