@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14304f" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b1a2b" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Exit Interviews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===========================================================================
+   Exit Interviews - Swiss/minimal, built for one thumb on a phone.
+   Brand stays navy + gold because this app produces the NIETE / Taleemabad
+   records; a different accent here would read as a different product.
+   Stage colours follow the status-page convention: amber waits on you,
+   green is ready, slate is resting, red needs attention.
+   =========================================================================== */
+:root {
+  /* brand */
+  --navy:#14304f; --navy-700:#1b3f66; --navy-300:#9dc0e0; --gold:#c9922e;
+  --action:#14304f; --action-hover:#1b3f66; --on-action:#ffffff;
+
+  /* semantic surfaces */
+  --bg:#f4f6f9;
+  --surface:#ffffff;
+  --surface-2:#f8fafc;
+  --border:#dfe5ec;
+  --border-strong:#c6d0db;
+
+  /* text - all pairs checked at 4.5:1 or better on their own surface */
+  --ink:#16202c;
+  --ink-2:#4a5a6b;
+  --ink-3:#6b7a8b;
+
+  /* status */
+  --act:#8a6314;      --act-bg:#fdf5e4;   --act-bd:#f0ddb0;   /* needs you      */
+  --ready:#1c6b43;    --ready-bg:#eaf7ef; --ready-bd:#b6e2c8; /* ready to send  */
+  --wait:#2d5a86;     --wait-bg:#eef4fa;  --wait-bd:#c3d9ee;  /* waiting        */
+  --rest:#5b6b7d;     --rest-bg:#eff2f5;  --rest-bd:#d8dee6;  /* done           */
+  --danger:#a8261f;   --danger-bg:#fdeeec; --danger-bd:#f3c6c1;
+
+  --radius:14px; --radius-sm:10px;
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px;
+  --shadow:0 1px 2px rgba(16,32,48,.05), 0 2px 10px rgba(16,32,48,.05);
+  --t:200ms cubic-bezier(.2,.7,.3,1);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:#0b1118; --surface:#131c26; --surface-2:#18232f;
+    --border:#263442; --border-strong:#36485a;
+    --ink:#eef3f8; --ink-2:#b4c2d0; --ink-3:#8e9daf;
+    --act:#f0c270;   --act-bg:#2c2415;   --act-bd:#4a3c1d;
+    --ready:#7fd3a3; --ready-bg:#14271d; --ready-bd:#245239;
+    --wait:#9cc4ea;  --wait-bg:#152333;  --wait-bd:#27425f;
+    --rest:#9aa9b9;  --rest-bg:#1a232d;  --rest-bd:#2b3846;
+    --danger:#f3a49c; --danger-bg:#2c1716; --danger-bd:#532824;
+    --action:#3d7ebd; --action-hover:#4a8ccb; --on-action:#06121d;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 2px 10px rgba(0,0,0,.25);
+  }
+}
+
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+/* A class that sets `display` outranks the UA [hidden] rule, which quietly breaks
+   every hidden element on this page. Make hidden win. */
+[hidden] { display:none !important; }
+html,body { overflow-x:hidden; }
+body {
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Source Sans 3",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:16.5px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+:focus-visible { outline:3px solid var(--gold); outline-offset:2px; border-radius:6px; }
+
+/* Lexend on the parts the eye lands on - names, headings, counts. It was built for
+   reading ease and is softer than a neutral grotesque, which suits a tool someone opens
+   every day. Source Sans 3 does the paragraphs, where a quieter face is kinder. */
+h1, h2, h3, .nm, .stat b, .pill, .btn, .group, .sheet h3, .gate h2, label {
+  font-family:Lexend,"Source Sans 3",-apple-system,sans-serif;
+}
+.stat b, .step .bead b { font-variant-numeric:tabular-nums; }
+
+/* ---------------- header ---------------- */
+header {
+  background:var(--navy); color:#fff; border-bottom:3px solid var(--gold);
+  padding:calc(var(--sp-4) + env(safe-area-inset-top,0)) var(--sp-4) var(--sp-3);
+  position:sticky; top:0; z-index:20;
+}
+.hrow { display:flex; align-items:center; gap:var(--sp-3); }
+.mark {
+  width:40px; height:40px; border-radius:50%; flex:none; overflow:hidden;
+  box-shadow:0 0 0 2px rgba(255,255,255,.18); background:rgba(255,255,255,.08);
+}
+.mark img { width:100%; height:100%; display:block; object-fit:cover; }
+header h1 { margin:0; font-size:17px; font-weight:600; letter-spacing:-.01em; }
+header .sub {
+  font-size:12px; color:var(--navy-300); margin-top:1px;
+  display:flex; align-items:center; gap:6px; min-width:0;
+}
+.sub .dot { width:7px; height:7px; border-radius:50%; background:#5fcf92; flex:none; }
+.sub .dot.bad { background:#f0806f; }
+.sub span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+main { max-width:640px; margin:0 auto; padding:var(--sp-4) var(--sp-4) calc(96px + env(safe-area-inset-bottom,0)); }
+
+/* ---------------- summary strip ---------------- */
+.strip { display:flex; gap:var(--sp-2); margin-bottom:var(--sp-4); }
+.stat {
+  flex:1; min-width:0; background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:10px var(--sp-3); text-align:center;
+}
+.stat b { display:block; font-size:21px; font-weight:700; line-height:1.15; font-variant-numeric:tabular-nums; }
+.stat span { display:block; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase;
+             color:var(--ink-3); font-weight:600; margin-top:2px; }
+.stat.on-you b { color:var(--act); } .stat.ready b { color:var(--ready); }
+
+/* ---------------- group heading ---------------- */
+.group { font-size:11.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase;
+         color:var(--ink-3); margin:var(--sp-5) 0 var(--sp-2) 2px; }
+.group:first-of-type { margin-top:0; }
+
+/* ---------------- card ---------------- */
+.card {
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:var(--sp-4); margin-bottom:var(--sp-3); box-shadow:var(--shadow);
+  border-left:4px solid var(--border-strong);
+}
+.card.s-new { border-left-color:var(--act); }
+.card.s-review { border-left-color:var(--ready); }
+.card.s-scheduled, .card.s-drafting { border-left-color:var(--wait); }
+.card.s-error { border-left-color:var(--danger); }
+.card.s-done { border-left-color:var(--rest); opacity:.82; }
+@media (hover:hover) and (min-width:900px) {
+  .card { transition:box-shadow var(--t), transform var(--t); }
+  .card:hover { box-shadow:0 2px 6px rgba(16,32,48,.07), 0 10px 26px rgba(16,32,48,.09);
+                transform:translateY(-1px); }
+}
+
+.top { display:flex; justify-content:space-between; align-items:flex-start; gap:var(--sp-3); }
+.who { min-width:0; }
+.nm { font-size:17px; font-weight:600; letter-spacing:-.01em; word-break:break-word; }
+.meta { color:var(--ink-2); font-size:13px; margin-top:3px; }
+.meta .line { display:block; }
+.meta .q { color:var(--ink-3); }
+
+.pill {
+  flex:none; font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  padding:5px 10px; border-radius:999px; white-space:nowrap; border:1px solid transparent;
+}
+.p-new{background:var(--act-bg);color:var(--act);border-color:var(--act-bd)}
+.p-scheduled,.p-drafting{background:var(--wait-bg);color:var(--wait);border-color:var(--wait-bd)}
+.p-review{background:var(--ready-bg);color:var(--ready);border-color:var(--ready-bd)}
+.p-done{background:var(--rest-bg);color:var(--rest);border-color:var(--rest-bd)}
+.p-error{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-bd)}
+
+/* ---------------- stepper ----------------
+   The whole product is a pipeline, so each card says where it has got to. Steps already
+   passed get a tick, the live one gets the brand colour, the rest stay quiet. */
+.brand { display:none; }
+.steps { display:flex; align-items:flex-start; margin:var(--sp-4) 0 var(--sp-2); }
+.step { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; position:relative; }
+.step::before, .step::after {
+  content:''; position:absolute; top:11px; height:2px; background:var(--border-strong);
+}
+.step::before { left:0; right:50%; } .step::after { left:50%; right:0; }
+.step:first-child::before, .step:last-child::after { display:none; }
+.step .bead {
+  width:24px; height:24px; border-radius:50%; background:var(--surface);
+  border:2px solid var(--border-strong); display:grid; place-items:center;
+  position:relative; z-index:1; flex:none; transition:background var(--t), border-color var(--t);
+}
+.step .bead b { font-size:11px; font-weight:700; color:var(--ink-3); line-height:1; }
+.step .cap { font-size:10px; font-weight:600; letter-spacing:.02em; color:var(--ink-3);
+             margin-top:6px; text-align:center; line-height:1.25; }
+.step.past .bead { background:var(--ready); border-color:var(--ready); }
+.step.past .bead svg { stroke:#fff; }
+.step.past::before, .step.past::after { background:var(--ready); }
+.step.now::before { background:var(--ready); }
+.step.now .bead { background:var(--action); border-color:var(--action); box-shadow:0 0 0 4px var(--wait-bg); }
+.step.now .bead b { color:var(--on-action); }
+.step.now .cap { color:var(--ink); font-weight:700; }
+.step.stopped .bead { background:var(--rest-bg); border-color:var(--rest-bd); }
+.stepnow { display:none; font-size:12.5px; color:var(--ink-2); margin:0 0 var(--sp-2); text-align:center; }
+.stepnow b { color:var(--ink); }
+/* Five captions cannot sit side by side on a phone without running into each other, so
+   below this width the beads carry the progress and one line names where it is. */
+@media (max-width: 460px) {
+  .step .cap { display:none; }
+  .steps { margin-bottom:var(--sp-2); }
+  .stepnow { display:block; }
+}
+
+/* ---------------- notices ---------------- */
+.notice { display:flex; gap:10px; padding:11px 13px; border-radius:var(--radius-sm);
+          margin-top:var(--sp-3); font-size:13.5px; line-height:1.45; border:1px solid; }
+.notice svg { flex:none; margin-top:1px; }
+.n-warn { background:var(--danger-bg); color:var(--danger); border-color:var(--danger-bd); }
+.n-info { background:var(--act-bg); color:var(--act); border-color:var(--act-bd); }
+.n-calm { background:var(--surface-2); color:var(--ink-2); border-color:var(--border); }
+.notice ul { margin:5px 0 0; padding-left:17px; } .notice li { margin-bottom:3px; }
+
+/* ---------------- form ---------------- */
+.field { margin-top:var(--sp-3); }
+label { display:block; font-size:11.5px; font-weight:700; letter-spacing:.04em;
+        text-transform:uppercase; color:var(--ink-3); margin-bottom:5px; }
+input {
+  font:inherit; font-size:16px; /* 16px stops iOS zooming on focus */
+  width:100%; min-height:48px; padding:11px 13px; color:var(--ink);
+  background:var(--surface-2); border:1px solid var(--border-strong);
+  border-radius:var(--radius-sm); transition:border-color var(--t), background var(--t);
+}
+input:focus { background:var(--surface); border-color:var(--navy-700); }
+.hint { font-size:12.5px; color:var(--ink-3); margin-top:5px; }
+
+/* ---------------- buttons ---------------- */
+.actions { display:flex; flex-wrap:wrap; gap:var(--sp-2); margin-top:var(--sp-4); }
+.btn {
+  font:inherit; font-size:15px; font-weight:600; cursor:pointer;
+  min-height:48px; padding:0 18px; border-radius:var(--radius-sm); border:1px solid transparent;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  text-decoration:none; transition:background var(--t), border-color var(--t), transform 90ms ease;
+  flex:1 1 auto;
+}
+.btn:active:not(:disabled) { transform:scale(.985); }
+.btn-primary { background:var(--action); color:var(--on-action); }
+.btn-primary:hover:not(:disabled) { background:var(--action-hover); }
+.btn-ghost { background:var(--surface-2); color:var(--ink); border-color:var(--border-strong); }
+.btn-ghost:hover:not(:disabled) { background:var(--bg); }
+.btn-quiet { background:transparent; color:var(--ink-3); border-color:transparent;
+             font-weight:500; font-size:14px; min-height:44px; flex:0 0 auto; padding:0 10px; }
+.btn-quiet:hover:not(:disabled) { color:var(--danger); }
+.btn:disabled { opacity:.55; cursor:not-allowed; }
+.spin { width:16px; height:16px; border:2px solid currentColor; border-right-color:transparent;
+        border-radius:50%; animation:sp .6s linear infinite; }
+@keyframes sp { to { transform:rotate(360deg); } }
+
+.err { color:var(--danger); font-size:13.5px; margin-top:10px; display:flex; gap:7px; align-items:flex-start; }
+
+/* ---------------- empty + skeleton ---------------- */
+.empty { text-align:center; padding:56px 20px; color:var(--ink-3); }
+.empty .ring { width:54px; height:54px; margin:0 auto var(--sp-3); border-radius:50%;
+               background:var(--surface); border:1px solid var(--border); display:grid; place-items:center; }
+.empty h2 { font-size:16px; font-weight:600; color:var(--ink-2); margin:0 0 4px; }
+.empty p { font-size:14px; margin:0; }
+.sk { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      padding:var(--sp-4); margin-bottom:var(--sp-3); }
+.sk i { display:block; height:12px; border-radius:6px; background:var(--border);
+        animation:pulse 1.4s ease-in-out infinite; }
+.sk i+i { margin-top:10px; }
+@keyframes pulse { 0%,100%{opacity:.55} 50%{opacity:1} }
+
+/* ---------------- gate ---------------- */
+.gate { position:fixed; inset:0; background:var(--bg); z-index:60;
+        display:grid; place-items:center; padding:var(--sp-5); }
+.gate .box { width:100%; max-width:340px; text-align:center; }
+.gate .mark { width:78px; height:78px; margin:0 auto var(--sp-4);
+              box-shadow:0 0 0 3px var(--border), 0 8px 22px rgba(16,32,48,.16); }
+.gate h2 { font-size:19px; margin:0 0 4px; }
+.gate p { color:var(--ink-3); font-size:14px; margin:0 0 var(--sp-5); }
+.gate input { text-align:center; font-size:22px; letter-spacing:.35em; font-weight:600; min-height:56px; }
+
+/* ---------------- toast + sheet ---------------- */
+#toast { position:fixed; left:50%; transform:translate(-50%,120%);
+         bottom:calc(20px + env(safe-area-inset-bottom,0)); z-index:80;
+         background:var(--navy); color:#fff; padding:13px 18px; border-radius:999px;
+         font-size:14.5px; font-weight:500; box-shadow:0 8px 28px rgba(0,0,0,.26);
+         display:flex; align-items:center; gap:9px; max-width:calc(100vw - 32px);
+         visibility:hidden; opacity:0;
+         transition:transform 260ms cubic-bezier(.2,.8,.3,1), opacity 180ms linear, visibility 0s linear 260ms; }
+#toast.show { transform:translate(-50%,0); visibility:visible; opacity:1; transition-delay:0s; }
+#toast.bad { background:var(--danger); }
+
+.scrim { position:fixed; inset:0; background:rgba(10,20,32,.55); z-index:70;
+         opacity:0; pointer-events:none; transition:opacity var(--t); }
+.scrim.show { opacity:1; pointer-events:auto; }
+.sheet { position:fixed; left:0; right:0; bottom:0; z-index:75; background:var(--surface);
+         border-radius:20px 20px 0 0; padding:var(--sp-5) var(--sp-4) calc(var(--sp-4) + env(safe-area-inset-bottom,0));
+         transform:translateY(110%); transition:transform 280ms cubic-bezier(.2,.8,.3,1);
+         max-width:640px; margin:0 auto; }
+.sheet.show { transform:translateY(0); }
+.sheet .grab { width:38px; height:4px; border-radius:2px; background:var(--border-strong); margin:0 auto var(--sp-4); }
+.sheet h3 { margin:0 0 6px; font-size:17px; }
+.sheet p { margin:0 0 var(--sp-5); color:var(--ink-2); font-size:14.5px; }
+
+/* ---------------- draft editor ---------------- */
+/* A screen of its own rather than the bottom sheet. Correcting a record means reading a
+   paragraph, changing a clause and reading it back, and a panel covering half the phone
+   leaves nowhere to do that. The bar stays pinned so Save is always one thumb away, however
+   far down the document you have scrolled. */
+.editor { position:fixed; inset:0; z-index:85; background:var(--bg); overflow-y:auto;
+          -webkit-overflow-scrolling:touch; }
+.edbar { position:sticky; top:0; z-index:2; display:flex; align-items:center; gap:var(--sp-3);
+         background:var(--surface); border-bottom:1px solid var(--border);
+         padding:var(--sp-3) var(--sp-4); padding-top:calc(var(--sp-3) + env(safe-area-inset-top,0)); }
+.edbar h2 { flex:1; margin:0; font-size:16px; }
+/* flex:none or a lone button stretches to fill the row the title is sharing. */
+.edbar .btn { flex:none; min-height:42px; padding:9px 15px; }
+.edbody { max-width:720px; margin:0 auto; padding:var(--sp-4) var(--sp-4) calc(var(--sp-6) + env(safe-area-inset-bottom,0)); }
+.ed-h { margin:var(--sp-5) 0 var(--sp-2); padding-bottom:6px; border-bottom:1px solid var(--border);
+        font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--navy-700); }
+.ed-h:first-child { margin-top:0; }
+textarea { font:inherit; font-size:16px; /* 16px stops iOS zooming on focus */
+  width:100%; padding:11px 13px; color:var(--ink); line-height:1.55; resize:vertical;
+  background:var(--surface-2); border:1px solid var(--border-strong);
+  border-radius:var(--radius-sm); transition:border-color var(--t), background var(--t); }
+textarea:focus { background:var(--surface); border-color:var(--navy-700); }
+select { font:inherit; font-size:16px; width:100%; min-height:48px; padding:11px 13px;
+  color:var(--ink); background:var(--surface-2); border:1px solid var(--border-strong);
+  border-radius:var(--radius-sm); }
+/* The leaver's own words, marked in the same gold as the printed document so the two read
+   as the same thing. */
+.ed-quote textarea { border-left:3px solid var(--gold); font-style:italic; }
+.chk { display:flex; align-items:center; gap:10px; margin-top:var(--sp-3);
+       font-size:14.5px; color:var(--ink-2); }
+.chk input { width:20px; min-height:20px; height:20px; flex:none; padding:0; }
+.ed-block { padding:var(--sp-4); margin-top:var(--sp-3); background:var(--surface);
+            border:1px solid var(--border); border-radius:var(--radius); }
+.ed-block > .field:first-child { margin-top:0; }
+
+/* ---------------- register ---------------- */
+/* Sits under the counters rather than among them: the counters are work outstanding, this
+   is the finished body of work, and the two answer different questions. */
+.railbtn { display:block; width:100%; text-align:left; margin-top:var(--sp-3);
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm);
+  padding:var(--sp-3) var(--sp-4); cursor:pointer; font:inherit; color:var(--ink);
+  transition:border-color var(--t), background var(--t); }
+.railbtn:hover { border-color:var(--navy-700); background:var(--surface-2); }
+.railbtn .rb-n { display:block; font-size:21px; font-weight:700; line-height:1.15;
+                 color:var(--navy-700); font-variant-numeric:tabular-nums; }
+.railbtn .rb-t { display:block; font-size:13.5px; font-weight:600; margin-top:1px; }
+.railbtn .rb-s { display:block; font-size:11.5px; color:var(--ink-3); margin-top:2px; }
+
+.reg-row { display:flex; align-items:center; gap:var(--sp-3); padding:var(--sp-3) 0;
+           border-bottom:1px solid var(--border); }
+.reg-row:last-child { border-bottom:0; }
+.reg-main { flex:1; min-width:0; }
+.reg-name { font-size:15.5px; font-weight:600; }
+.reg-sub { font-size:12.5px; color:var(--ink-3); margin-top:2px; }
+.reg-open { flex:none; font-size:13.5px; font-weight:600; color:var(--navy-700);
+            text-decoration:none; white-space:nowrap; padding:8px 12px;
+            border:1px solid var(--border-strong); border-radius:var(--radius-sm); }
+.reg-open:hover { border-color:var(--navy-700); background:var(--surface-2); }
+.reg-year { margin:var(--sp-5) 0 var(--sp-1); font-size:11.5px; font-weight:700;
+            letter-spacing:.07em; text-transform:uppercase; color:var(--ink-3); }
+.reg-year:first-child { margin-top:0; }
+
+/* Desktop. A single narrow column on a 1440px screen reads as an unfinished page, but
+   stretching cards to full width makes the forms unreadable. So: the counters become a
+   sticky rail on the left and the work stays in one comfortable column on the right -
+   the width gets used without anything growing past the size it wants to be. */
+@media (min-width: 900px) {
+  main { max-width:860px; padding:var(--sp-5) var(--sp-5) var(--sp-6); }
+  header { padding-left:var(--sp-5); padding-right:var(--sp-5); }
+  header .hrow { max-width:860px; margin:0 auto; }
+  header h1 { font-size:19px; }
+  .nm { font-size:18px; }
+  .stat b { font-size:23px; }
+}
+@media (min-width: 1140px) {
+  main { max-width:1120px; display:grid; grid-template-columns:250px minmax(0,1fr);
+         gap:var(--sp-6); align-items:start; }
+  header .hrow { max-width:1120px; }
+  .rail { grid-column:1; position:sticky; top:104px; display:block; }
+  .strip { flex-direction:column; gap:var(--sp-2); margin:0; }
+  .brand img { width:52px; height:52px; border-radius:50%; flex:none;
+               box-shadow:0 0 0 2px var(--border), 0 4px 14px rgba(16,32,48,.12); }
+  .brand .t { font-family:Lexend,sans-serif; font-weight:600; font-size:15px; line-height:1.2; }
+  .brand .s { font-size:12px; color:var(--ink-3); margin-top:2px; }
+  .brand { display:flex; align-items:center; gap:12px; margin:0 0 var(--sp-4) 2px; }
+  .stat { text-align:left; display:flex; align-items:baseline; gap:10px; padding:12px var(--sp-4); }
+  .stat b { font-size:22px; } .stat span { margin-top:0; }
+  #list { grid-column:2; }
+  /* the archive compacts two-up; live cards keep their reading width */
+  .done-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 var(--sp-3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- PIN gate: a real screen, not a browser prompt, so it can be read and retried -->
+<div class="gate" id="gate" hidden>
+  <div class="box">
+    <div class="mark"><img src="/raftar.png" alt="Raftar"></div>
+    <h2>Exit Interviews</h2>
+    <p>Enter your PIN to continue</p>
+    <form onsubmit="unlock(event)">
+      <input id="pinInput" type="password" inputmode="numeric" autocomplete="current-password"
+             aria-label="PIN" placeholder="••••••">
+      <div class="err" id="gateErr" hidden></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:16px" type="submit">Unlock</button>
+    </form>
+  </div>
+</div>
+
+<header>
+  <div class="hrow">
+    <div class="mark"><img src="/raftar.png" alt="Raftar"></div>
+    <div style="min-width:0;flex:1">
+      <h1>Exit Interviews</h1>
+      <div class="sub" id="sub"><span>Checking…</span></div>
+    </div>
+    <button class="btn btn-quiet" style="color:var(--navy-300);min-height:44px" onclick="poll(this)"
+            aria-label="Check mail now" id="pollBtn">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="rail">
+  <div class="brand"><img src="/raftar.png" alt="">
+    <div><div class="t">Raftar</div><div class="s">Exit interview desk</div></div></div>
+  <div class="strip" id="strip" hidden>
+    <div class="stat on-you"><b id="cOn">0</b><span>On you</span></div>
+    <div class="stat ready"><b id="cReady">0</b><span>Ready</span></div>
+    <div class="stat"><b id="cWait">0</b><span>Waiting</span></div>
+    <div class="stat"><b id="cDone">0</b><span>Sent</span></div>
+  </div>
+  <button class="railbtn" id="regBtn" onclick="openRegister()" hidden>
+    <span class="rb-n" id="regCount">&mdash;</span>
+    <span class="rb-t">Interviews on record</span>
+    <span class="rb-s">Everything filed in Drive</span>
+  </button>
+  </div>
+  <div id="list" role="region" aria-label="Exit interview cases" aria-busy="true">
+    <div class="sk"><i style="width:45%"></i><i style="width:72%"></i><i style="width:30%"></i></div>
+    <div class="sk"><i style="width:55%"></i><i style="width:65%"></i></div>
+  </div>
+  <!-- one atomic status line, so a screen reader hears what changed and not a bare number -->
+  <p id="live" role="status" aria-atomic="true"
+     style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap"></p>
+</main>
+
+<div class="scrim" id="scrim" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shT">
+  <div class="grab"></div>
+  <h3 id="shT"></h3>
+  <p id="shP"></p>
+  <div class="actions">
+    <button class="btn btn-ghost" onclick="closeSheet()">Cancel</button>
+    <button class="btn btn-primary" id="shGo"></button>
+  </div>
+</div>
+
+<div class="editor" id="editor" hidden role="dialog" aria-modal="true" aria-labelledby="edT">
+  <div class="edbar">
+    <button class="btn btn-ghost" onclick="closeEditor()">Cancel</button>
+    <h2 id="edT">Edit the draft</h2>
+    <button class="btn btn-primary" id="edSave" onclick="saveEditor(this)">Save</button>
+  </div>
+  <div class="edbody" id="edBody"></div>
+</div>
+
+<div class="editor" id="registerView" hidden role="dialog" aria-modal="true" aria-labelledby="regT">
+  <div class="edbar">
+    <button class="btn btn-ghost" onclick="closeRegister()">Close</button>
+    <h2 id="regT">Interviews on record</h2>
+  </div>
+  <div class="edbody" id="regBody"></div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ---------- tiny helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pin = () => sessionStorage.getItem('pin') || localStorage.getItem('pin') || '';
+
+const ICON = {
+  warn:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 9v4"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 17h.01"/></svg>',
+  info:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+  clock:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  check:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>',
+  doc:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>',
+  send:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>',
+  cal:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>',
+  undo:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>',
+  edit:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  code:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>',
+  inbox:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.7 4H7.3a2 2 0 0 0-1.8 1.1z"/></svg>',
+};
+
+/* ---------- API ---------- */
+async function api(path, opts = {}) {
+  const r = await fetch(path, { ...opts,
+    headers: { 'Content-Type':'application/json', 'x-pin': pin(), ...(opts.headers||{}) } });
+  if (r.status === 401) { showGate('Wrong PIN — try again'); throw new Error('PIN required'); }
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+
+/* ---------- gate ---------- */
+function showGate(msg) {
+  $('gate').hidden = false;
+  if (msg) { $('gateErr').innerHTML = ICON.warn + '<span>' + esc(msg) + '</span>'; $('gateErr').hidden = false; }
+  setTimeout(() => $('pinInput').focus(), 60);
+}
+function unlock(e) {
+  e.preventDefault();
+  const v = $('pinInput').value.trim();
+  if (!v) return;
+  localStorage.setItem('pin', v);
+  $('gate').hidden = true; $('gateErr').hidden = true; $('pinInput').value = '';
+  refresh();
+}
+
+/* ---------- button busy state: every action shows it is working ---------- */
+async function busy(btn, label, fn) {
+  if (!btn) return fn();
+  const html = btn.innerHTML, w = btn.offsetWidth;
+  btn.disabled = true; btn.style.minWidth = w + 'px';
+  btn.innerHTML = '<span class="spin" aria-hidden="true"></span>' + (label ? '<span>'+label+'</span>' : '');
+  try { return await fn(); }
+  finally { btn.disabled = false; btn.innerHTML = html; btn.style.minWidth = ''; }
+}
+
+let toastT;
+function toast(msg, bad) {
+  const t = $('toast');
+  t.innerHTML = (bad ? ICON.warn : ICON.check) + '<span>' + esc(msg) + '</span>';
+  t.classList.toggle('bad', !!bad); t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3400);
+}
+
+/* ---------- confirm sheet (replaces window.confirm) ---------- */
+let sheetGo = null;
+function confirmSheet(title, body, cta, onGo) {
+  $('shT').textContent = title; $('shP').textContent = body;
+  $('shGo').textContent = cta; sheetGo = onGo;
+  $('scrim').classList.add('show'); $('sheet').classList.add('show');
+  setTimeout(() => $('shGo').focus(), 240);
+}
+function closeSheet() { $('scrim').classList.remove('show'); $('sheet').classList.remove('show'); sheetGo = null; }
+$('shGo').onclick = async function () {
+  const go = sheetGo;
+  await busy(this, 'Working', async () => { if (go) await go(); });
+  closeSheet();
+};
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+
+/* ---------- rendering ---------- */
+const fmt = iso => new Date(iso).toLocaleString('en-GB',
+  { timeZone:'Asia/Karachi', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit', hour12:true });
+
+function defaultSlot() {           // tomorrow 3pm PKT - where these usually land
+  const d = new Date(Date.now() + 864e5); d.setHours(15,0,0,0);
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+// Where each stage sits on the pipeline. A dismissed case stops wherever it was rather
+// than pretending it finished.
+const STEPS = ['Request','Scheduled','Interviewed','Drafted','Sent'];
+const AT = { new:0, scheduled:1, drafting:2, review:3, done:4, error:2 };
+
+function stepper(c) {
+  // A sent case has finished the last step, not stopped on it. Pushing the marker one
+  // past the end makes every bead a tick, so "Sent" reads as done rather than pending.
+  const sent = c.stage === 'done' && !c.dismissed;
+  const at = sent ? STEPS.length
+                  : c.dismissed ? (AT[c.prevStage] ?? 0) : (AT[c.stage] ?? 0);
+
+  const tick = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="3.2" '
+             + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+  const out = STEPS.map((label, i) => {
+    let cls = i < at ? 'past' : i === at ? 'now' : '';
+    if (c.dismissed && i >= at) cls = i === at ? 'stopped' : '';
+    return `<li class="step ${cls}"><span class="bead">${i < at ? tick : '<b>'+(i+1)+'</b>'}</span>
+            <span class="cap">${label}</span></li>`;
+  }).join('');
+
+  const label = sent ? 'All five steps complete'
+              : c.dismissed ? 'Stopped at ' + STEPS[at]
+              : 'Now at ' + STEPS[at];
+  const line = sent ? '<b>Complete</b> &middot; filed and sent'
+             : c.dismissed ? 'Stopped at <b>' + esc(STEPS[at]) + '</b>'
+             : 'Step ' + (at + 1) + ' of ' + STEPS.length + ' &middot; <b>' + esc(STEPS[at]) + '</b>';
+  return `<ol class="steps" aria-label="${esc(label)}">${out}</ol><p class="stepnow">${line}</p>`;
+}
+
+function card(c) {
+  const h = [];
+  h.push(`<article class="card s-${c.stage}" id="c-${c.id}">`);
+  h.push(`<div class="top"><div class="who">
+      <div class="nm">${esc(c.name || 'Name not found yet')}</div>
+      <div class="meta">
+        <span class="line">${esc(c.role || 'Role not stated')}${c.email ? ' · ' + esc(c.email) : ''}</span>
+        ${c.lastWorkingDay ? `<span class="line">Last day ${esc(c.lastWorkingDay)}</span>` : ''}
+        ${c.requestedBy ? `<span class="line q">Asked by ${esc(String(c.requestedBy).replace(/<.*>/,'').trim())}</span>` : ''}
+      </div></div>
+    <span class="pill p-${c.stage}">${esc(c.dismissed ? 'Dismissed' : (SHORT[c.stage] || c.label))}</span></div>`);
+  h.push(stepper(c));
+
+  if (c.stage === 'new') {
+    if (c.needsTriage) h.push(`<div class="notice n-info">${ICON.info}<div>
+      Details not read out of the thread yet. Type the name in, or wait for the next routine run.</div></div>`);
+    h.push(`<div class="field"><label for="nm-${c.id}">Who is leaving</label>
+      <input id="nm-${c.id}" value="${esc(c.name||'')}" placeholder="Full name" autocomplete="off"></div>`);
+    h.push(`<div class="field"><label for="em-${c.id}">Their work email</label>
+      <input id="em-${c.id}" type="email" value="${esc(c.email||'')}" placeholder="name@niete.edu.pk" autocomplete="off"></div>`);
+    h.push(`<div class="field"><label for="dt-${c.id}">Interview date &amp; time</label>
+      <input id="dt-${c.id}" type="datetime-local" value="${c.suggestedDate ? c.suggestedDate+'T15:00' : defaultSlot()}">
+      <div class="hint">Pakistan time. The invite goes to them, to whoever flagged it, and to
+        the notetaker${c.notetakers && c.notetakers.length ? ' (' + esc(c.notetakers.join(', ')) + ')' : ''}.</div></div>`);
+    h.push(`<div class="actions"><button class="btn btn-primary" onclick="invite('${c.id}',this)">
+      ${ICON.cal}<span>Send invite</span></button></div>`);
+  }
+
+  if (c.stage === 'scheduled') {
+    h.push(`<div class="notice n-calm">${ICON.clock}<div>
+      <b>${esc(fmt(c.interview.startIso))}</b><br>
+      Notes are picked up on their own once the notetaker sends them.
+      ${c.interview.link ? `<br><a href="${esc(c.interview.link)}">Open the Meet link</a>` : ''}</div></div>`);
+  }
+
+  if (c.stage === 'drafting') {
+    h.push(`<div class="notice n-calm">${ICON.clock}<div>Notes found. The draft is being written.</div></div>`);
+  }
+
+  if (c.stage === 'review') {
+    if (c.restricted && c.restricted.length) h.push(`<div class="notice n-warn">${ICON.warn}<div>
+      <b>Section ${esc(c.restricted.join(', '))} is restricted.</b>
+      Read it before sending — it should stay with HR leadership.</div></div>`);
+    if (c.gaps && c.gaps.length) h.push(`<div class="notice n-info">${ICON.info}<div>
+      <b>Worth knowing</b><ul>${c.gaps.map(g=>'<li>'+esc(g)+'</li>').join('')}</ul></div></div>`);
+    h.push(`<div class="actions">
+      <a class="btn btn-ghost" href="/api/cases/${c.id}/pdf?pin=${encodeURIComponent(pin())}" target="_blank" rel="noopener">
+        ${ICON.doc}<span>Read the draft</span></a>
+      <button class="btn btn-ghost" onclick="openEditor('${c.id}')">${ICON.edit}<span>Edit the wording</span></button>
+    </div>
+    <div class="field"><label for="to-${c.id}">Reply goes to</label>
+      <input id="to-${c.id}" type="email" value="${esc(c.recordTo||'')}" autocomplete="off">
+      <div class="hint">Whoever asked for the interview.</div></div>
+    <div class="field"><label for="cc-${c.id}">Copied to everyone else on the thread</label>
+      <textarea id="cc-${c.id}" rows="2">${esc((c.recordCc||[]).join(', '))}</textarea>
+      <div class="hint">Taken from the request thread and re-checked against it when you send.
+        The leaver is never on this list &mdash; that is blocked outright.</div></div>
+    ${c.recordDropped && c.recordDropped.length ? `<div class="notice n-warn">${ICON.warn}<div>
+      <b>Left off: ${esc(c.recordDropped.join(', '))}.</b> That looks like a wide internal list,
+      and the record should not go to one. Add it above if it really should.</div></div>` : ''}
+    <div class="actions"><button class="btn btn-primary" onclick="publish('${c.id}')">
+      ${ICON.send}<span>File &amp; send</span></button></div>`);
+  }
+
+  if (c.stage === 'done') {
+    const done = c.dismissed ? 'Dismissed without action.'
+      : c.handledOutside ? 'Interview held and written up before this app took it on.'
+      : 'Sent to ' + esc(String(c.requestedBy || '').replace(/<.*>/, '').trim());
+    h.push(`<div class="notice n-calm">${ICON.check}<div>${done}
+      ${c.drive ? `<br><a href="${esc(c.drive.link)}">Open the PDF in Drive</a>` : ''}</div></div>`);
+  }
+
+  if (c.stage === 'error') {
+    h.push(`<div class="notice n-warn">${ICON.warn}<div>${esc(c.error||'Something went wrong')}</div></div>`);
+    h.push(`<div class="actions"><button class="btn btn-ghost" onclick="draft('${c.id}',this)">Try drafting again</button></div>`);
+  }
+
+  if (c.stage !== 'done') {
+    h.push(`<div class="actions" style="margin-top:var(--sp-2)">
+      <button class="btn btn-quiet" onclick="dismiss('${c.id}')">Dismiss this case</button></div>`);
+  } else if (c.dismissed) {
+    h.push(`<div class="actions"><button class="btn btn-ghost" onclick="reopen('${c.id}',this)">
+      ${ICON.undo}<span>Reopen this case</span></button></div>`);
+  }
+
+  h.push(`<div class="err" id="e-${c.id}" hidden></div></article>`);
+  return h.join('');
+}
+
+function fail(id, e) {
+  const n = $('e-'+id);
+  if (n) { n.innerHTML = ICON.warn + '<span>' + esc(e.message) + '</span>'; n.hidden = false; }
+  else toast(e.message, true);
+}
+
+/* Order by who is waiting on whom: your turn first, then the machine's, then the archive. */
+const SHORT = { new:'Schedule', scheduled:'Waiting', drafting:'Writing',
+                review:'Ready', done:'Sent', error:'Attention' };
+const ORDER = { review:0, new:1, error:2, drafting:3, scheduled:4, done:5 };
+const GROUP = { review:'Ready for you', new:'Needs scheduling', error:'Needs attention',
+                drafting:'Being written', scheduled:'Waiting for the interview', done:'Finished' };
+
+async function refresh() {
+  if (!pin()) return showGate();
+  try {
+    const [{ cases }, st] = await Promise.all([api('/api/cases'), api('/api/status')]);
+
+    const bad = [];
+    if (st.mailboxError) bad.push('mailbox: ' + st.mailboxError);
+    if (st.drive && !st.drive.ok) bad.push('Drive: ' + st.drive.reason);
+    $('sub').innerHTML = `<span class="dot ${bad.length?'bad':''}"></span><span>${
+      esc(bad.length ? bad[0] : (st.mailbox || 'connected') + ' · checks every ' + st.pollMinutes + ' min')}</span>`;
+
+    const n = s => cases.filter(c => c.stage === s).length;
+    $('cOn').textContent = n('new'); $('cReady').textContent = n('review');
+    $('cWait').textContent = n('scheduled') + n('drafting'); $('cDone').textContent = n('done');
+    $('strip').hidden = false;
+    // Deliberately not awaited: the register is a Drive round trip, and the cases should
+    // not wait on it to appear.
+    loadRegisterCount();
+
+    const list = $('list');
+    list.setAttribute('aria-busy','false');
+    if (!cases.length) {
+      list.innerHTML = `<div class="empty"><div class="ring">${ICON.inbox}</div>
+        <h2>Nothing waiting</h2><p>A request from People &amp; Culture will show up here on its own.</p></div>`;
+    } else {
+      const sorted = [...cases].sort((a,b) => (ORDER[a.stage]??9) - (ORDER[b.stage]??9));
+      const live = sorted.filter(c => c.stage !== 'done');
+      const past = sorted.filter(c => c.stage === 'done');
+      let html = '', last = null;
+      for (const c of live) {
+        const g = GROUP[c.stage] || c.label;
+        if (g !== last) { html += `<h2 class="group">${esc(g)}</h2>`; last = g; }
+        html += card(c);
+      }
+      if (past.length) {
+        html += `<h2 class="group">Finished</h2><div class="done-grid">`
+             + past.map(card).join('') + `</div>`;
+      }
+      list.innerHTML = html;
+    }
+    const onYou = n('new') + n('review');
+    $('live').textContent = onYou ? `${onYou} case${onYou>1?'s':''} waiting for you` : 'Nothing waiting for you';
+  } catch (e) {
+    if (e.message !== 'PIN required') toast(e.message, true);
+  }
+}
+
+/* ---------- actions ---------- */
+async function poll(btn) {
+  await busy(btn, '', async () => {
+    try { const r = await api('/api/poll', { method:'POST' }); await refresh();
+      const f = r.requests?.found || 0, m = r.notes?.matched || 0;
+      toast(f || m ? `${f} new, ${m} with notes` : 'Nothing new in the mailbox');
+    } catch (e) { toast(e.message, true); }
+  });
+}
+
+async function invite(id, btn) {
+  const name = $('nm-'+id).value.trim(), email = $('em-'+id).value.trim(), dt = $('dt-'+id).value;
+  if (!name)  return fail(id, new Error('Who is leaving? Fill the name in.'));
+  if (!email) return fail(id, new Error('An email address is needed to send the invite.'));
+  if (!dt)    return fail(id, new Error('Pick a date and time.'));
+  $('e-'+id).hidden = true;
+  await busy(btn, 'Sending', async () => {
+    try {
+      await api(`/api/cases/${id}/details`, { method:'POST', body: JSON.stringify({ name, email }) });
+      // datetime-local carries no zone; these slots are always Pakistan time.
+      await api(`/api/cases/${id}/invite`, { method:'POST', body: JSON.stringify({ startIso: dt + ':00+05:00' }) });
+      toast('Invite sent'); await refresh();
+    } catch (e) { fail(id, e); }
+  });
+}
+
+async function draft(id, btn) {
+  await busy(btn, 'Writing', async () => {
+    try { await api(`/api/cases/${id}/draft`, { method:'POST' }); toast('Draft ready'); await refresh(); }
+    catch (e) { fail(id, e); }
+  });
+}
+
+/* ---------- the register ---------- */
+/* Counted from what is filed in Drive rather than from the cases, so the three interviews
+   held before this app existed are in it, and so that the number means "records we have"
+   rather than "cases the app happened to handle". */
+const LONG_DATE = iso => {
+  const d = new Date(iso + 'T00:00:00');
+  return isNaN(d) ? iso : d.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+};
+
+async function loadRegisterCount() {
+  try {
+    const r = await api('/api/register');
+    $('regCount').textContent = r.count;
+    $('regBtn').hidden = false;
+    return r;
+  } catch (e) { $('regBtn').hidden = true; return null; }
+}
+
+async function openRegister() {
+  $('regBody').innerHTML = '<div class="sk"><i style="width:60%"></i><i style="width:40%"></i></div>';
+  $('registerView').hidden = false;
+  document.body.style.overflow = 'hidden';
+  let r;
+  try { r = await api('/api/register'); }
+  catch (e) { $('regBody').innerHTML = `<div class="notice n-warn">${ICON.warn}<div>${esc(e.message)}</div></div>`; return; }
+
+  if (!r.rows.length) {
+    $('regBody').innerHTML = `<div class="notice n-calm">${ICON.info}<div>Nothing filed yet.</div></div>`;
+    return;
+  }
+  const h = [`<p style="margin:0 0 var(--sp-4);color:var(--ink-2);font-size:15px">
+    <b>${r.count}</b> exit interview${r.count === 1 ? '' : 's'} on record, newest first.
+    Each one opens the filed PDF in Drive.</p>`];
+  let year = '';
+  for (const row of r.rows) {
+    const y = String(row.date).slice(0, 4);
+    if (y !== year) { year = y; h.push(`<div class="reg-year">${esc(year)}</div>`); }
+    const bits = [LONG_DATE(row.date), row.role, row.restricted.length ? 'Restricted section' : '']
+      .filter(Boolean).map(esc).join(' &nbsp;·&nbsp; ');
+    h.push(`<div class="reg-row">
+      <div class="reg-main"><div class="reg-name">${esc(row.name)}</div>
+        <div class="reg-sub">${bits}</div></div>
+      <a class="reg-open" href="${esc(row.link)}" target="_blank" rel="noopener">Open PDF</a>
+    </div>`);
+  }
+  $('regBody').innerHTML = h.join('');
+}
+
+function closeRegister() {
+  $('registerView').hidden = true;
+  document.body.style.overflow = '';
+}
+
+/* ---------- editing the draft before it goes ---------- */
+/* Everything here is text the model wrote from a notetaker's paraphrase, and the person
+   reading it is the only one who was actually in the room. Lists are edited as one
+   textarea, a line per bullet - on a phone that beats add/remove buttons, and clearing a
+   line is how a bullet is deleted. The shape of the record is fixed: this corrects
+   wording, it does not rebuild the document. */
+let edCase = null;
+
+const edField = (id, label, value, hint) =>
+  `<div class="field"><label for="${id}">${esc(label)}</label>`
+  + `<input id="${id}" type="text" value="${esc(value||'')}" autocomplete="off">`
+  + (hint ? `<div class="hint">${esc(hint)}</div>` : '') + '</div>';
+
+const edArea = (id, label, value, rows, hint, cls) =>
+  `<div class="field ${cls||''}"><label for="${id}">${esc(label)}</label>`
+  + `<textarea id="${id}" rows="${rows}">${esc(value||'')}</textarea>`
+  + (hint ? `<div class="hint">${esc(hint)}</div>` : '') + '</div>';
+
+const PER_LINE = 'One per line. Clear a line to drop it.';
+
+async function openEditor(id) {
+  let c;
+  try { c = await api('/api/cases/' + id); }
+  catch (e) { return fail(id, e); }
+  if (!c.record) return fail(id, new Error('There is no draft to edit yet'));
+  edCase = c;
+  const r = c.record;
+  const h = [];
+
+  h.push('<div class="ed-h">Heading</div><div class="ed-block">');
+  h.push(edField('ed-name', 'Name', r.name));
+  h.push(edField('ed-role', 'Role', r.role));
+  (r.facts || []).slice(0, 4).forEach((f, i) =>
+    h.push(edField('ed-fact-' + i, 'Headline ' + (i + 1), f, i === 0 ? 'Two or three words.' : '')));
+  h.push('</div>');
+
+  h.push('<div class="ed-h">The interview</div><div class="ed-block">');
+  h.push(edField('ed-tenure', 'Tenure', r.tenure));
+  h.push(edField('ed-dateMode', 'Date and mode', r.dateMode));
+  h.push(edField('ed-separation', 'Separation', r.separation));
+  h.push('</div>');
+
+  h.push('<div class="ed-h">Why they left</div><div class="ed-block">');
+  h.push(edArea('ed-reasonsLead', 'Opening line', r.reasonsLead, 2));
+  h.push(edArea('ed-reasons', 'Reasons', (r.reasons || []).join('\n'), 7, PER_LINE));
+  h.push('</div>');
+
+  h.push('<div class="ed-h">What worked</div><div class="ed-block">');
+  h.push(edArea('ed-strengths', 'What they said worked', (r.strengths || []).join('\n'), 6, PER_LINE));
+  h.push('</div>');
+
+  (r.flags || []).forEach((f, i) => {
+    h.push(`<div class="ed-h">Section ${esc(f.number)}</div><div class="ed-block">`);
+    h.push(edField('ed-fl-t-' + i, 'Title', f.title));
+    h.push(edArea('ed-fl-b-' + i, 'What the record says', f.body, 7));
+    h.push(edArea('ed-fl-q-' + i, 'Their own words', f.quote, 3,
+      'Verbatim, exactly as they said it. Leave empty rather than writing it for them.', 'ed-quote'));
+    h.push(`<label class="chk"><input type="checkbox" id="ed-fl-r-${i}"${f.restricted ? ' checked' : ''}>`
+      + '<span>Restricted &mdash; stays with HR leadership</span></label>');
+    h.push('</div>');
+  });
+
+  (r.named || []).forEach((n, i) => {
+    h.push(`<div class="ed-h">${esc(n.person)}</div><div class="ed-block">`);
+    h.push(`<div class="field"><label for="ed-nm-r-${i}">How they were spoken of</label>`
+      + `<select id="ed-nm-r-${i}">`
+      + ['adverse', 'neutral', 'positive'].map(v =>
+          `<option value="${v}"${n.register === v ? ' selected' : ''}>${v[0].toUpperCase() + v.slice(1)}</option>`).join('')
+      + '</select><div class="hint">Someone they complained <em>to</em> is neutral, not adverse.</div></div>');
+    h.push(edArea('ed-nm-w-' + i, 'What was said', n.what, 4));
+    h.push('</div>');
+  });
+
+  h.push('<div class="ed-h">What they asked for</div><div class="ed-block">');
+  h.push(edArea('ed-requests', 'Requests they made themselves', (r.requests || []).join('\n'), 5, PER_LINE));
+  h.push('</div>');
+
+  $('edBody').innerHTML = h.join('');
+  $('edT').textContent = 'Edit ' + (r.name || 'the draft');
+  $('editor').hidden = false;
+  document.body.style.overflow = 'hidden';
+  $('editor').scrollTop = 0;
+}
+
+function closeEditor() {
+  $('editor').hidden = true;
+  document.body.style.overflow = '';
+  edCase = null;
+}
+
+async function saveEditor(btn) {
+  if (!edCase) return closeEditor();
+  const id = edCase.id, r = edCase.record;
+  const val = x => { const n = $(x); return n ? n.value : undefined; };
+  const patch = {
+    name: val('ed-name'), role: val('ed-role'),
+    tenure: val('ed-tenure'), dateMode: val('ed-dateMode'), separation: val('ed-separation'),
+    reasonsLead: val('ed-reasonsLead'),
+    reasons: val('ed-reasons'), strengths: val('ed-strengths'), requests: val('ed-requests'),
+    facts: (r.facts || []).map((_, i) => val('ed-fact-' + i)),
+    flags: (r.flags || []).map((_, i) => ({
+      title: val('ed-fl-t-' + i), body: val('ed-fl-b-' + i), quote: val('ed-fl-q-' + i),
+      restricted: $('ed-fl-r-' + i) ? $('ed-fl-r-' + i).checked : undefined,
+    })),
+    named: (r.named || []).map((_, i) => ({ register: val('ed-nm-r-' + i), what: val('ed-nm-w-' + i) })),
+  };
+  btn.disabled = true;
+  const was = btn.textContent;
+  btn.textContent = 'Saving…';
+  try {
+    await api(`/api/cases/${id}/record`, { method:'POST', body: JSON.stringify(patch) });
+    closeEditor();
+    toast('Draft updated — re-read it before sending');
+    await refresh();
+  } catch (e) {
+    toast(e.message, true);
+  } finally { btn.disabled = false; btn.textContent = was; }
+}
+
+function publish(id) {
+  const el = $('to-' + id), ccEl = $('cc-' + id);
+  const to = (el ? el.value : '').trim();
+  const cc = (ccEl ? ccEl.value : '').trim();
+  if (!to) return fail(id, new Error('Who should receive the record?'));
+  const others = cc.split(/[,\s]+/).filter(Boolean);
+  confirmSheet('File and send this record?',
+    `The PDF goes into the Drive folder, and the record goes back onto the original thread `
+    + `as a reply to ${to}`
+    + (others.length ? `, copied to ${others.length} other${others.length > 1 ? 's' : ''}` : '')
+    + '. The leaver is not on it. This cannot be taken back.',
+    'File & send',
+    async () => {
+      try {
+        await api(`/api/cases/${id}/publish`, { method:'POST', body: JSON.stringify({ to, cc }) });
+        toast('Filed in Drive and sent'); await refresh();
+      } catch (e) { fail(id, e); }
+    });
+}
+
+async function reopen(id, btn) {
+  await busy(btn, 'Reopening', async () => {
+    try { await api(`/api/cases/${id}/reopen`, { method:'POST', body:'{}' }); toast('Case reopened'); await refresh(); }
+    catch (e) { fail(id, e); }
+  });
+}
+
+function dismiss(id) {
+  confirmSheet('Dismiss this case?',
+    'It closes without an invite, a record or an email. Use this for a thread that was picked up by mistake, or one already handled.',
+    'Dismiss',
+    async () => {
+      try { await api(`/api/cases/${id}/dismiss`, { method:'POST', body:'{}' }); toast('Case dismissed'); await refresh(); }
+      catch (e) { fail(id, e); }
+    });
+}
+
+/* ---------- go ---------- */
+if (!pin()) showGate(); else refresh();
+setInterval(() => { if (pin() && !document.hidden) refresh(); }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && pin()) refresh(); });
+</script>
+</body>
+</html>

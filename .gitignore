@@ -1,0 +1,8 @@
+node_modules
+.env
+*.log
+
+# Case state and rendered records. Never in version control: these hold the content of
+# exit interviews, including named allegations.
+data/
+*.pdf

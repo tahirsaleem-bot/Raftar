@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Exit Interview Record — {{NAME}}</title>
+<style>
+  /* Deliberately no margin here. A CSS @page margin OVERRIDES the one the print call
+     asks for in Chromium, and the running footer lives in that bottom margin - declaring
+     even "margin: 0" would take the footer's space away and print the body edge to edge.
+     Margins are set in render.js instead. */
+  @page { size: A4; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Calibri, "Helvetica Neue", Arial, sans-serif;
+    font-size: 10pt; line-height: 1.42; color: #1f2733;
+    max-width: 860px; margin: 0 auto; padding: 0 0 30px; background: #fff;
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead { background: #14304f; color: #fff; padding: 20px 26px 17px; border-bottom: 5px solid #c9922e; }
+  .mast-row { display: table; width: 100%; }
+  .mast-left { display: table-cell; vertical-align: middle; }
+  .mast-right { display: table-cell; vertical-align: middle; text-align: right; width: 330px; white-space: nowrap; }
+  .logochip { display: inline-block; background: #ffffff; border-radius: 7px; padding: 8px 13px;
+              margin-left: 9px; vertical-align: middle; text-align: center; }
+  .logochip img { height: 30px; width: auto; vertical-align: middle; margin-right: 9px; }
+  .logochip .nm { display: inline-block; vertical-align: middle; font-size: 13pt; font-weight: 700;
+                  color: #14304f; letter-spacing: -0.2px; }
+  .logochip img.nietelogo { height: 29px; width: auto; margin-right: 0; vertical-align: middle; }
+  .masthead .eyebrow { font-size: 8pt; letter-spacing: 2px; text-transform: uppercase; color: #9dc0e0; margin: 0 0 5px; font-weight: 600; }
+  .masthead h1 { font-size: 21pt; margin: 0 0 6px; font-weight: 600; letter-spacing: -0.4px; }
+  .masthead .meta { font-size: 9pt; color: #cfe0f0; margin: 0; }
+  .masthead .meta b { color: #fff; font-weight: 600; }
+  /* Each item on the byline breaks as a whole or not at all. Letting it wrap mid-phrase
+     put "19 / October 2026" across two lines, which is the first thing a reader sees. */
+  .masthead .meta .seg { white-space: nowrap; }
+  .conf { display: inline-block; margin-top: 10px; font-size: 7.5pt; font-weight: 700; letter-spacing: 1.2px;
+          text-transform: uppercase; background: #8f2f2f; color: #ffe9e9; padding: 3px 10px; border-radius: 3px; }
+
+  .wrap { padding: 0 26px; }
+
+  /* ---------- Headings ---------- */
+  h2 { font-size: 12pt; margin: 20px 0 9px; padding: 0 0 6px; border-bottom: 2px solid #14304f;
+       color: #14304f; font-weight: 600; }
+  h2 .num { display: inline-block; width: 21px; height: 21px; line-height: 21px; text-align: center;
+            background: #14304f; color: #fff; border-radius: 3px; font-size: 9.5pt; margin-right: 8px; vertical-align: 2px; }
+  p, li { margin: 0 0 5px; }
+  ul { margin: 0 0 9px; padding-left: 19px; }
+  li { margin: 0 0 4px; }
+  li::marker { color: #4a86b8; }
+  strong { color: #0f2333; }
+  .lead { font-size: 9.5pt; color: #5b6b7d; margin: 0 0 8px; }
+  .fl { margin: 0 0 8px; }
+  /* The leaver's own words. Set apart from the reporting voice so the boundary between
+     what they said and how we summarised it is visible at a glance. */
+  .q { margin: -3px 0 9px; padding: 1px 0 1px 11px; border-left: 2px solid #c9922e;
+       font-style: italic; color: #33475b; page-break-inside: avoid; }
+
+  /* ---------- Tables ---------- */
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 9.5pt; }
+  th, td { border: 1px solid #ccd6e0; padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: #14304f; color: #fff; font-weight: 600; font-size: 8.5pt; letter-spacing: 0.4px; text-transform: uppercase; }
+  tbody tr:nth-child(even) td { background: #f6f9fc; }
+  td.k { width: 27%; background: #eaf1f8 !important; font-weight: 600; color: #14304f; }
+
+  /* ---------- Fact strip ---------- */
+  .facts { display: table; width: 100%; border-spacing: 7px 0; margin: 13px 0 3px; }
+  .facts .cell { display: table-cell; width: 25%; background: #f2f6fa; border-top: 3px solid #4a86b8; padding: 8px 10px; text-align: center; }
+  .facts .lbl { font-size: 7pt; letter-spacing: 1px; text-transform: uppercase; color: #5b7896; font-weight: 600; }
+  .facts .val { font-size: 11pt; font-weight: 600; color: #14304f; margin-top: 2px; }
+
+  /* ---------- The only two notes the house style allows ---------- */
+  .note { background: #f4f7fa; border-left: 4px solid #7e93a8; padding: 8px 13px; margin: 9px 0; font-size: 9pt; color: #44586b; }
+  .note b { color: #1f2733; }
+  .restrict { background: #fbeeee; border-left: 4px solid #a83232; padding: 8px 13px; margin: 9px 0; font-size: 9pt; color: #5c2626; }
+  .restrict b { color: #8a2020; }
+
+  /* ---------- Badges for the named-individuals table ---------- */
+  .badge { display: inline-block; font-size: 7pt; font-weight: 700; letter-spacing: 0.7px;
+           text-transform: uppercase; padding: 2px 7px; border-radius: 3px; white-space: nowrap; }
+  .b-neg { background: #a83232; color: #fff; }
+  .b-neu { background: #7e93a8; color: #fff; }
+  .b-pos { background: #2e8b57; color: #fff; }
+
+  .flag { margin: 0 0 13px; page-break-inside: avoid; }
+  .flag:last-child { margin-bottom: 0; }
+
+  /* Who recorded this, and on whose authority. A document that circulates to leadership
+     should not trail off after the last bullet. */
+  .sign { margin: 26px 0 0; padding-top: 11px; border-top: 1px solid #ccd6e0;
+          font-size: 8.5pt; color: #5b6b7d; page-break-inside: avoid; }
+  .sign .who { font-size: 10pt; font-weight: 600; color: #14304f; }
+  .sign .line { margin-top: 2px; }
+
+  @media print {
+    body { padding: 0; }
+    .masthead { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    h2 { page-break-after: avoid; }
+    table, .note, .restrict, .facts { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="mast-row">
+    <div class="mast-left">
+      <p class="eyebrow">Human Resources &nbsp;·&nbsp; Separation Documentation</p>
+      <h1>Exit Interview Record</h1>
+      <p class="meta"><span class="seg"><b>{{NAME}}</b></span> &nbsp;·&nbsp;
+        <span class="seg">{{ROLE}}</span> &nbsp;·&nbsp;
+        <span class="seg">Interviewed by <b>{{INTERVIEWER}}</b></span> &nbsp;·&nbsp;
+        <span class="seg">{{DATE}}</span></p>
+      <span class="conf">Confidential — Internal Use Only</span>
+    </div>
+    <div class="mast-right">
+      <div class="logochip">
+        <img src="{{LOGO_TALEEMABAD}}" alt="Taleemabad"><span class="nm">Taleemabad</span>
+      </div>
+      <div class="logochip">
+        <img class="nietelogo" src="{{LOGO_NIETE}}" alt="NIETE">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- Four headline facts. Keep the values to two or three words so they stay on one line. -->
+<div class="facts">
+  <div class="cell"><div class="lbl">Tenure</div><div class="val">{{FACT_1}}</div></div>
+  <div class="cell"><div class="lbl">Duration</div><div class="val">{{FACT_2}}</div></div>
+  <div class="cell"><div class="lbl">Separation</div><div class="val">{{FACT_3}}</div></div>
+  <div class="cell"><div class="lbl">Interview Date</div><div class="val">{{FACT_4}}</div></div>
+</div>
+
+<h2><span class="num">1</span>Employee Details</h2>
+<table>
+  <tr><td class="k">Employee Name</td><td>{{NAME}}</td></tr>
+  <tr><td class="k">Designation</td><td>{{ROLE}}</td></tr>
+  <tr><td class="k">Length of Service</td><td>{{TENURE}}</td></tr>
+  <tr><td class="k">Interview Date &amp; Mode</td><td>{{DATE_MODE}}</td></tr>
+  <tr><td class="k">Type of Separation</td><td>{{SEPARATION}}</td></tr>
+</table>
+
+<h2><span class="num">2</span>Reasons for Leaving</h2>
+<p class="lead">{{REASONS_LEAD}}</p>
+<ul>
+  {{REASONS}}
+</ul>
+
+<h2><span class="num">3</span>What {{THEY}} Said Worked</h2>
+<ul>
+  {{STRENGTHS}}
+</ul>
+
+<h2><span class="num">4</span>What {{THEY}} Flagged</h2>
+{{FLAGS}}
+
+<h2><span class="num">5</span>Individuals {{THEY}} Named</h2>
+<table>
+  <tr><th style="width:17%">Name</th><th style="width:13%">Context</th><th>What {{they}} said</th><th style="width:6%">Ref</th></tr>
+  {{NAMED}}
+</table>
+
+<div class="note">
+  <b>Note on the adverse mentions.</b> These are one person's account, unverified, and the individuals
+  named have not been given any opportunity to respond. Names, quotes and the sequence of events should be
+  checked against the recording before being repeated or acted on. This document records what was said; it
+  does not establish that it is correct.
+</div>
+
+<h2><span class="num">6</span>What {{THEY}} Asked For</h2>
+<p class="lead">Recorded as {{they}} put them — these are {{their}} own requests, not recommendations added
+afterwards.</p>
+<ul>
+  {{REQUESTS}}
+</ul>
+
+<div class="sign">
+  <div class="who">{{INTERVIEWER}}</div>
+  <div class="line">People &amp; Culture &nbsp;·&nbsp; Taleemabad (NIETE)</div>
+  <div class="line">Record of the interview held on {{DATE}}.</div>
+</div>
+
+</div>
+
+</body>
+</html>
