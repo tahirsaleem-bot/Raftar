@@ -17,14 +17,74 @@ app.use(express.json({ limit: '1mb' }));
 
 // A shared PIN rather than accounts: one person uses this, from a phone, and the data it
 // holds is already in their mailbox. The PIN keeps the URL from being enough on its own.
+//
+// On its own a six-digit PIN is a million guesses, which an unthrottled script finishes in
+// hours - and behind it are exit interview records naming people and carrying harassment
+// disclosures. So guessing is rate limited per client: a short delay after a few misses,
+// growing to a lockout, and Tahir is mailed the first time it looks deliberate.
+const MISSES_BEFORE_DELAY = 3;
+const MISSES_BEFORE_LOCK = 10;
+const LOCK_MS = 15 * 60 * 1000;
+const WINDOW_MS = 60 * 60 * 1000;
+const attempts = new Map();   // client -> { misses, first, lockedUntil, warned }
+
+// Railway terminates TLS in front of us, so the caller's address is in the forwarded
+// header; fall back to the socket when running locally.
+const clientOf = req =>
+  String(req.get('x-forwarded-for') || req.ip || '').split(',')[0].trim() || 'unknown';
+
+function record(req) {
+  const key = clientOf(req);
+  const now = Date.now();
+  let a = attempts.get(key);
+  if (!a || now - a.first > WINDOW_MS) a = { misses: 0, first: now, lockedUntil: 0, warned: false };
+  attempts.set(key, a);
+  // Keep the map from growing without bound on a public URL.
+  if (attempts.size > 500) {
+    for (const [k, v] of attempts) if (now - v.first > WINDOW_MS && now > v.lockedUntil) attempts.delete(k);
+  }
+  return a;
+}
+
+// Constant-time compare, so the response time cannot be used to learn the PIN digit by
+// digit. The length is padded first because timingSafeEqual throws on a length mismatch.
+function samePin(given, expected) {
+  const a = Buffer.from(String(given).padEnd(64).slice(0, 64));
+  const b = Buffer.from(String(expected).padEnd(64).slice(0, 64));
+  return crypto.timingSafeEqual(a, b) && String(given).length === String(expected).length;
+}
+
 function authed(req) {
   if (!cfg.APP_PIN) return true;
-  const given = req.get('x-pin') || req.query.pin || '';
-  return given === cfg.APP_PIN;
+  return samePin(req.get('x-pin') || req.query.pin || '', cfg.APP_PIN);
 }
+
 function guard(req, res, next) {
-  if (authed(req)) return next();
-  res.status(401).json({ error: 'PIN required' });
+  if (!cfg.APP_PIN) return next();
+  const a = record(req);
+  const now = Date.now();
+
+  if (now < a.lockedUntil) {
+    res.set('Retry-After', String(Math.ceil((a.lockedUntil - now) / 1000)));
+    return res.status(429).json({ error: 'Too many wrong PINs. Try again shortly.' });
+  }
+
+  if (authed(req)) { attempts.delete(clientOf(req)); return next(); }
+
+  a.misses++;
+  if (a.misses >= MISSES_BEFORE_LOCK) {
+    a.lockedUntil = now + LOCK_MS;
+    if (!a.warned) {
+      a.warned = true;
+      engine.alertPinAttack(clientOf(req), a.misses).catch(() => {});
+    }
+    res.set('Retry-After', String(LOCK_MS / 1000));
+    return res.status(429).json({ error: 'Too many wrong PINs. Try again shortly.' });
+  }
+
+  // A slice of a second is nothing to someone typing it in and ruinous to a script.
+  const delay = a.misses >= MISSES_BEFORE_DELAY ? Math.min(2000, 250 * (a.misses - 2)) : 0;
+  setTimeout(() => res.status(401).json({ error: 'PIN required' }), delay);
 }
 
 // The trigger probe runs the live matcher against a body-only resignation, so this says
@@ -72,6 +132,7 @@ app.get('/api/status', guard, async (_req, res) => {
     anthropic: ai.ready(),
     driveFolder: cfg.DRIVE_FOLDER_ID || null,
     routine: { configured: !!cfg.AGENT_TOKEN_SHA256, lastVisit: lastAgentVisit, queued: engine.agentTasks().length },
+    health: engine.healthSummary(),
   };
   try { out.mailbox = await g.profile(); } catch (e) { out.mailboxError = e.message; }
   out.drive = await g.checkDrive();
@@ -173,8 +234,16 @@ app.post('/api/poll', guard, async (_req, res) => {
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 store.ensure();
-app.listen(cfg.PORT, () => {
-  console.log(`exit-interview-agent on :${cfg.PORT}`);
-  setTimeout(() => engine.pollAll().catch(e => console.error('poll', e.message)), 5000);
-  setInterval(() => engine.pollAll().catch(e => console.error('poll', e.message)), cfg.POLL_MINUTES * 60000);
-});
+
+// Only bind a port and start polling when this file is the thing being run. Required as a
+// module - by the tests - it is just the app, so the HTTP behaviour can be exercised
+// without a live server racing a poll against Gmail.
+if (require.main === module) {
+  app.listen(cfg.PORT, () => {
+    console.log(`exit-interview-agent on :${cfg.PORT}`);
+    setTimeout(() => engine.pollAll().catch(e => console.error('poll', e.message)), 5000);
+    setInterval(() => engine.pollAll().catch(e => console.error('poll', e.message)), cfg.POLL_MINUTES * 60000);
+  });
+}
+
+module.exports = app;

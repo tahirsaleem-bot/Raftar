@@ -711,6 +711,65 @@ function reopen(id) {
 
 // ---------------------------------------------------------------- poll
 
+// A poll that throws used to go to console.error and no further, which meant an expired
+// Google token, a revoked scope or a broken Chromium looked exactly like "no resignations
+// came in" - and could stay that way for weeks. The whole point of this app is that nobody
+// has to remember to check it, so it has to say when it has stopped working.
+//
+// One mail, not one per failure: these fail every fifteen minutes once they start. It goes
+// after the third consecutive failure, so a single timeout stays quiet, and the counter
+// resets on the first good poll - which also sends the all-clear, because knowing it is
+// working again matters as much as knowing it broke.
+const health = { fails: 0, alerted: false, lastError: null, lastOk: null };
+const ALERT_AFTER = 3;
+
+async function reportHealth(err) {
+  if (err) {
+    health.fails++;
+    health.lastError = err.message;
+    if (health.fails < ALERT_AFTER || health.alerted) return;
+    health.alerted = true;
+    await sendPlain(
+      'Exit interview agent has stopped working',
+      `<p>The agent has failed ${health.fails} polls in a row and is no longer picking up`
+      + ' resignations or notetaker summaries.</p>'
+      + `<p style="color:#8a2020"><b>${esc(err.message)}</b></p>`
+      + '<p>The usual causes are an expired Google token, a revoked scope, or the service'
+      + ' being down. Nothing is lost - it catches up once it is working again.</p>'
+      + `<p><a href="${cfg.APP_URL}">Open the app</a></p>`,
+    );
+    return;
+  }
+  health.lastOk = nowIso();
+  if (!health.alerted) { health.fails = 0; return; }
+  health.alerted = false;
+  health.fails = 0;
+  await sendPlain('Exit interview agent is working again',
+    '<p>The agent polled successfully. Anything that arrived while it was down has been'
+    + ' picked up.</p>');
+}
+
+const esc = s => String(s == null ? '' : s)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+// Used for the health mails. Deliberately separate from notify(), which is per case.
+async function sendPlain(subject, html) {
+  if (!cfg.NOTIFY) return;
+  try { await g.send({ to: cfg.SENDER_EMAIL, subject, html }); }
+  catch (e) { console.error('health mail failed:', e.message); }
+}
+
+// Somebody is working through PINs. Worth saying out loud once: the only thing between a
+// stranger and these records is that number, and if it is being guessed it should be
+// changed rather than waited out.
+async function alertPinAttack(client, misses) {
+  await sendPlain('Someone is guessing the exit interview PIN',
+    `<p><b>${misses} wrong PINs</b> from <code>${esc(client)}</code>. That address is locked`
+    + ' out for fifteen minutes.</p>'
+    + '<p>If this was not you, change <code>APP_PIN</code> in Railway now. The app holds'
+    + ' exit interview records, so the PIN is the only thing protecting them.</p>');
+}
+
 let polling = false;
 async function pollAll() {
   if (polling) return { skipped: true };
@@ -718,9 +777,20 @@ async function pollAll() {
   try {
     const a = await scanRequests();
     const b = await scanNotes();
-    return { requests: a, notes: b, at: nowIso() };
+    await reportHealth(null);
+    return { requests: a, notes: b, at: nowIso(), health: healthSummary() };
+  } catch (e) {
+    await reportHealth(e);
+    throw e;
   } finally { polling = false; }
 }
+
+const healthSummary = () => ({
+  failingSince: health.fails ? health.fails + ' consecutive failures' : null,
+  lastError: health.fails ? health.lastError : null,
+  lastOk: health.lastOk,
+  alerted: health.alerted,
+});
 
 // ---------------------------------------------------------------- the Claude Code routine
 //
@@ -853,4 +923,5 @@ function summary() {
 module.exports = {
   scanRequests, scanNotes, sendInvite, draft, applyRecord, publish, dismiss, reopen, recipientFor, pollAll, summary,
   agentTasks, applyAgentResult, STAGE_LABEL, looksLikeResignation, editRecord, register, markFiled,
+  healthSummary, alertPinAttack,
 };

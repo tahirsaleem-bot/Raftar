@@ -5,7 +5,8 @@
   "description": "Exit interview agent: HR request email -> calendar invite -> notetaker summary -> house-style record -> Drive + email",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "test": "node --test test/*.test.js"
   },
   "engines": {
     "node": ">=20"
