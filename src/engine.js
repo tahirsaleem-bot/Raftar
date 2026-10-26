@@ -595,6 +595,37 @@ function discard(id) {
   return { removed: true, id, was: name };
 }
 
+// An interview that happened before this app existed, where there is no case to mark.
+// Naveera's was one: her record was written and filed, but no email ever came through the
+// app, so the list said three interviews and the register said four. The counts have to
+// agree or neither is trusted.
+function backfill({ name, role, email, interviewDate, driveLink, fileId, requestedBy } = {}) {
+  const who = String(name || '').trim();
+  if (!who) throw new Error('A name is required');
+  if (!driveLink) throw new Error('A link to the filed record is required');
+  const already = store.all().find(c =>
+    (c.leaver?.name || '').trim().toLowerCase() === who.toLowerCase());
+  if (already) throw new Error(`There is already a case for ${who}`);
+
+  const iso = /^\d{4}-\d{2}-\d{2}$/.test(String(interviewDate || ''))
+    ? new Date(interviewDate + 'T10:00:00Z').toISOString()
+    : nowIso();
+
+  const c = store.save({
+    id: newId(),
+    stage: 'done',
+    handledOutside: true,
+    dismissed: false,
+    leaver: { name: who, role: role || '', email: email || '' },
+    interview: { startIso: iso },
+    drive: { id: fileId || null, link: driveLink },
+    request: requestedBy ? { from: requestedBy } : {},
+    createdAt: nowIso(),
+    log: [{ at: nowIso(), line: 'Added from a record that was filed before the app existed' }],
+  });
+  return c;
+}
+
 // An interview that was held and written up outside this app. Three were - Naveera, Sara
 // and Hamza, all before it existed - and the only thing the app could be told about them
 // was "dismissed", which reads as though nothing happened. This records what actually did:
@@ -988,5 +1019,5 @@ function summary() {
 module.exports = {
   scanRequests, scanNotes, sendInvite, draft, applyRecord, publish, dismiss, reopen, recipientFor, pollAll, summary,
   agentTasks, applyAgentResult, STAGE_LABEL, looksLikeResignation, editRecord, register, markFiled,
-  healthSummary, alertPinAttack, discard,
+  healthSummary, alertPinAttack, discard, backfill,
 };

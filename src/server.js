@@ -151,6 +151,12 @@ app.get('/api/status/render', guard, async (_req, res) => res.json(await render.
 // Drive, so it covers the ones handled before this app existed.
 // Records an interview that was held and written up outside the app.
 // Throws away a case that was never a resignation. Refused once a record exists.
+// Adds a case for an interview filed before the app existed, so the list and the
+// register agree on how many there have been.
+app.post('/api/cases', guard, (req, res) => {
+  try { res.json(engine.backfill(req.body || {})); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
 app.delete('/api/cases/:id', guard, (req, res) => {
   try { res.json(engine.discard(req.params.id)); }
   catch (e) { res.status(400).json({ error: e.message }); }

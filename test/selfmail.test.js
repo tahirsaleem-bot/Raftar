@@ -82,3 +82,28 @@ test('nor can one that has been filed in Drive', () => {
 test('removing something that is not there says so', () => {
   assert.throws(() => engine.discard('nope'), /No such case/i);
 });
+
+// An interview filed before the app existed has no case to mark, so the card list and the
+// register disagreed on how many there had been - three against four. Either both are
+// right or neither is believed.
+test('a past interview can be added so the counts agree', () => {
+  const c = engine.backfill({
+    name: 'Naveera', role: 'Coach - Field & School Support',
+    interviewDate: '2026-08-25', driveLink: 'https://drive/naveera', fileId: 'abc',
+  });
+  assert.equal(c.stage, 'done');
+  assert.equal(c.handledOutside, true, 'shown as held before the app took it on');
+  assert.equal(c.dismissed, false, 'and counted as sent, not dismissed');
+  assert.equal(c.drive.link, 'https://drive/naveera');
+  assert.equal(c.interview.startIso.slice(0, 10), '2026-08-25', 'the real interview date');
+});
+
+test('the same person is not added twice', () => {
+  assert.throws(() => engine.backfill({ name: 'naveera', driveLink: 'https://drive/x' }),
+    /already a case/i);
+});
+
+test('a backfill needs a name and a filed record', () => {
+  assert.throws(() => engine.backfill({ driveLink: 'https://drive/x' }), /name/i);
+  assert.throws(() => engine.backfill({ name: 'Someone' }), /link/i);
+});
