@@ -981,7 +981,16 @@ function dismiss(id) {
 }
 
 /* ---------- go ---------- */
-if (!pin()) showGate(); else refresh();
+/* Ask the server whether it wants a PIN before putting a gate in the way. If the PIN is
+   turned off in Railway, the app opens straight onto the cases; if it is turned back on,
+   the gate returns on the next load with nothing to redeploy. A failed probe falls back to
+   asking, which is the safe direction to be wrong in. */
+(async () => {
+  if (pin()) return refresh();
+  let needed = true;
+  try { needed = (await (await fetch('/health')).json()).pin !== false; } catch (e) { /* keep asking */ }
+  if (needed) showGate(); else refresh();
+})();
 setInterval(() => { if (pin() && !document.hidden) refresh(); }, 60000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && pin()) refresh(); });
 </script>

@@ -92,6 +92,10 @@ function guard(req, res, next) {
 app.get('/health', (_req, res) => res.json({
   ok: true,
   at: new Date().toISOString(),
+  // Whether a PIN is set at all. The app asks before showing its gate, so turning the PIN
+  // off is a single environment variable rather than a code change - and turning it back
+  // on takes effect without anyone having to be told.
+  pin: !!cfg.APP_PIN,
   trigger: engine.looksLikeResignation({ subject: 'Quick note', body: 'I am writing to submit my resignation.' })
     ? 'subject+body+forward' : 'subject only',
 }));

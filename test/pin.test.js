@@ -95,3 +95,19 @@ test('health is public, everything else is not', async () => {
     assert.equal((await fetch(base + p)).status, 401, p + ' must not be open');
   }
 });
+
+// Turning the PIN off is meant to be one environment variable, reversible in a second.
+test('with no PIN set, everything is open and /health says so', async () => {
+  const saved = require('../src/config').APP_PIN;
+  require('../src/config').APP_PIN = '';
+  try {
+    assert.equal((await get('/api/cases', '', as())).status, 200, 'no PIN asked for');
+    assert.equal((await (await fetch(base + '/health')).json()).pin, false,
+      'and the page is told, so it does not put a gate in the way');
+  } finally { require('../src/config').APP_PIN = saved; }
+});
+
+test('setting the PIN again closes it with no redeploy', async () => {
+  assert.equal((await get('/api/cases', '', as())).status, 401);
+  assert.equal((await (await fetch(base + '/health')).json()).pin, true);
+});
