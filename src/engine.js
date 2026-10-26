@@ -532,6 +532,32 @@ function threadAudience(c, messages) {
 }
 
 // What the card shows as the copy list. Same rule publish uses, against the stored thread.
+// Once the record is filed, the raw material behind it has no reason to stay.
+//
+// Until this ran, cases.json held the notetaker's whole summary - the substance of the
+// conversation, named allegations and all - plus the full text of every message on the
+// thread, indefinitely, on a volume with no retention policy and no backup discipline.
+// That is a quietly growing liability and nothing was using it.
+//
+// What is kept: the structured record (it is the document, and a correction has to be
+// written from it), who it went to, and the Drive link. What goes: the notetaker summaries
+// and the message bodies. Headers are kept so the thread can still be reasoned about.
+function purgeRawContent(id) {
+  const c = store.get(id);
+  if (!c) return;
+  const patch = {};
+  if (c.sources?.length) {
+    patch.sources = c.sources.map(s => ({ label: s.label, from: s.from, date: s.date, purged: true }));
+  }
+  if (c.requestThread?.length) {
+    patch.requestThread = c.requestThread.map(m =>
+      ({ from: m.from, to: m.to, cc: m.cc, date: m.date, subject: m.subject, purged: true }));
+  }
+  if (!Object.keys(patch).length) return;
+  store.update(id, patch);
+  store.log(id, 'Notetaker summaries and message bodies cleared - the filed record is the record now');
+}
+
 // An interview that was held and written up outside this app. Three were - Naveera, Sara
 // and Hamza, all before it existed - and the only thing the app could be told about them
 // was "dismissed", which reads as though nothing happened. This records what actually did:
@@ -551,6 +577,7 @@ async function markFiled(id, { interviewDate, driveLink, fileId } = {}) {
     drive: { id: fileId || null, link: driveLink },
   });
   store.log(id, `Marked as held and filed outside the app (${driveLink})`);
+  purgeRawContent(id);
   return store.get(id);
 }
 
@@ -679,6 +706,7 @@ async function publish(id, opts = {}) {
     stage: 'done', sentTo: to, sentCc: addrsIn(cc), sentAt: nowIso(),
     drive: { id: drive.id, link: drive.webViewLink },
   });
+  purgeRawContent(id);
   store.log(id, `Filed in Drive and emailed to ${to}${cc ? ' cc ' + cc : ''}`);
   return store.get(id);
 }
