@@ -54,13 +54,120 @@ function samePin(given, expected) {
   return crypto.timingSafeEqual(a, b) && String(given).length === String(expected).length;
 }
 
-function authed(req) {
-  if (!cfg.APP_PIN) return true;
-  return samePin(req.get('x-pin') || req.query.pin || '', cfg.APP_PIN);
+// Email sign-in: the meter-reading service checks the password, we hand back a signed
+// session (email + expiry, HMAC). Turned on by METER_AUTH_KEY + SESSION_SECRET.
+const SESSION_DAYS = 30;
+const emailLogin = () => !!(cfg.METER_AUTH_KEY && cfg.SESSION_SECRET);
+const loginRequired = () => !!cfg.APP_PIN || emailLogin();
+const sign = body => crypto.createHmac('sha256', cfg.SESSION_SECRET).update(body).digest('base64url');
+
+function makeSession(email) {
+  const body = Buffer.from(JSON.stringify({ e: email, x: Date.now() + SESSION_DAYS * 86400000 })).toString('base64url');
+  return body + '.' + sign(body);
+}
+// Who may open Exit Interviews is managed on the raftar-ops Users page and kept by the
+// meter-reading service (one account store, per-app access). Refreshed every minute so a
+// removed person is locked out within a minute; until the first fetch succeeds, only
+// EXIT_ALLOWED_EMAILS (the owner) is let in.
+let accessList = null, accessAt = 0;
+async function refreshAccess() {
+  if (!emailLogin() || Date.now() - accessAt < 60000) return;
+  accessAt = Date.now();
+  try {
+    const r = await fetch(cfg.METER_URL + '/api/dashboard-users?app=exit', {
+      headers: { 'x-admin-key': cfg.METER_AUTH_KEY }, signal: AbortSignal.timeout(8000) });
+    const j = await r.json();
+    if (r.ok && j.ok && Array.isArray(j.accounts)) accessList = j.accounts.map(a => String(a.email).toLowerCase());
+  } catch { /* keep the last good list */ }
+}
+const allowedEmails = () => accessList || cfg.EXIT_ALLOWED_EMAILS;
+
+function sessionEmail(token) {
+  if (!emailLogin()) return null;
+  const [body, sig] = String(token || '').split('.');
+  if (!body || !sig) return null;
+  const want = Buffer.from(sign(body)), got = Buffer.from(sig);
+  if (want.length !== got.length || !crypto.timingSafeEqual(want, got)) return null;
+  try {
+    const { e, x } = JSON.parse(Buffer.from(body, 'base64url').toString());
+    // re-checked on every request, so removing an email from the list locks it out at once
+    return Date.now() < x && allowedEmails().includes(e) ? e : null;
+  } catch { return null; }
 }
 
+function authed(req) {
+  if (!loginRequired()) return true;
+  if (sessionEmail(req.get('x-session') || req.query.session)) return true;
+  return !!cfg.APP_PIN && samePin(req.get('x-pin') || req.query.pin || '', cfg.APP_PIN);
+}
+
+// Wrong email/password counts against the same per-client limit as a wrong PIN.
+function noteMiss(req) {
+  const a = record(req);
+  a.misses++;
+  if (a.misses >= MISSES_BEFORE_LOCK) {
+    a.lockedUntil = Date.now() + LOCK_MS;
+    if (!a.warned) { a.warned = true; engine.alertPinAttack(clientOf(req), a.misses).catch(() => {}); }
+  }
+  return a;
+}
+
+app.post('/api/login', async (req, res) => {
+  if (!emailLogin()) return res.status(404).json({ error: 'Email sign-in is not set up' });
+  const a = record(req);
+  if (Date.now() < a.lockedUntil) return res.status(429).json({ error: 'Too many attempts. Try again in 15 minutes.' });
+  const email = String((req.body || {}).email || '').trim().toLowerCase();
+  const password = String((req.body || {}).password || '');
+  let ok = false, mustChange = false;
+  try {
+    const r = await fetch(cfg.METER_URL + '/api/dashboard-users/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': cfg.METER_AUTH_KEY },
+      body: JSON.stringify({ email, password, app: 'exit' }),
+      signal: AbortSignal.timeout(10000),
+    });
+    const j = r.ok ? await r.json() : {};
+    ok = j.ok === true;
+    mustChange = j.mustChange === true;
+    if (j.reason === 'no-access') return res.status(403).json({ error: 'This account does not have access to Exit Interviews.' });
+  } catch (e) {
+    return res.status(503).json({ error: 'Sign-in service is not reachable. Try again in a minute.' });
+  }
+  if (!ok) {
+    const m = noteMiss(req);
+    const delay = m.misses >= MISSES_BEFORE_DELAY ? Math.min(2000, 250 * (m.misses - 2)) : 0;
+    return setTimeout(() => res.status(401).json({ error: 'Email or password is incorrect.' }), delay);
+  }
+  attempts.delete(clientOf(req));
+  accessAt = 0; refreshAccess().catch(() => {}); // pick up a just-invited person straight away
+  if (accessList && !accessList.includes(email)) accessList.push(email);
+  res.json({ ok: true, email, session: makeSession(email), mustChange });
+});
+
+// First sign-in with the emailed password: choose your own. Needs a valid session, and the
+// meter-reading service re-checks the current password before changing anything.
+app.post('/api/change-password', async (req, res) => {
+  const email = sessionEmail(req.get('x-session'));
+  if (!email) return res.status(401).json({ error: 'Please sign in again' });
+  const { current = '', newpw = '' } = req.body || {};
+  try {
+    const r = await fetch(cfg.METER_URL + '/api/dashboard-users/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': cfg.METER_AUTH_KEY },
+      body: JSON.stringify({ email, current: String(current), newpw: String(newpw) }),
+      signal: AbortSignal.timeout(10000),
+    });
+    const j = r.ok ? await r.json() : { error: 'Could not change the password' };
+    if (!j.ok) return res.status(400).json({ error: j.error || 'Could not change the password' });
+    res.json({ ok: true });
+  } catch {
+    res.status(503).json({ error: 'Sign-in service is not reachable. Try again in a minute.' });
+  }
+});
+
 function guard(req, res, next) {
-  if (!cfg.APP_PIN) return next();
+  if (!loginRequired()) return next();
+  refreshAccess().catch(() => {});
   const a = record(req);
   const now = Date.now();
 
@@ -95,7 +202,8 @@ app.get('/health', (_req, res) => res.json({
   // Whether a PIN is set at all. The app asks before showing its gate, so turning the PIN
   // off is a single environment variable rather than a code change - and turning it back
   // on takes effect without anyone having to be told.
-  pin: !!cfg.APP_PIN,
+  pin: loginRequired(),
+  login: emailLogin() ? 'email' : (cfg.APP_PIN ? 'pin' : 'none'),
   trigger: engine.looksLikeResignation({ subject: 'Quick note', body: 'I am writing to submit my resignation.' })
     ? 'subject+body+forward' : 'subject only',
 }));

@@ -4,6 +4,15 @@ module.exports = {
   DATA_DIR: process.env.DATA_DIR || '/data',
   APP_PIN: process.env.APP_PIN || '',
 
+  // Sign-in with the Raftar dashboard email + password (2026-10-26). The password is
+  // checked by the meter-reading service; only the emails listed here get in, because
+  // dashboard access alone must never open exit interview records.
+  METER_URL: process.env.METER_URL || 'https://meter-reading-production-2d7f.up.railway.app',
+  METER_AUTH_KEY: process.env.METER_AUTH_KEY || '',
+  SESSION_SECRET: process.env.SESSION_SECRET || '',
+  EXIT_ALLOWED_EMAILS: (process.env.EXIT_ALLOWED_EMAILS || 'tahir.saleem@niete.edu.pk')
+    .split(',').map(s => s.trim().toLowerCase()).filter(Boolean),
+
   SENDER_EMAIL: 'tahir.saleem@niete.edu.pk',
   SENDER_NAME: 'Tahir Saleem',
 
