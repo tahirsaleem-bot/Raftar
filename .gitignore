@@ -1,16 +1,15 @@
-node_modules/
-.env
-.env.*
-secrets/
-credentials/
-*token*.json
-*token*.txt
-.markaz_session/
-.wwebjs_auth/
-.wwebjs_cache/
+# Sub-repos pushed separately
 ai-agent-starter/
 pa-app/
 exit-interview-agent/
 _downloads/claude-remotion-skill/
-out/
+# Never push
+node_modules/
+secrets/
+.env
+.env.*
+credentials/
+*token*.json
+*token*.txt
+.markaz_session/
 *.log
