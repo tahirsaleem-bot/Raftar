@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Exit Interviews — film</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* One page, one pure function: render(t) sets every element's state from the time alone.
+     No CSS transitions and no animation loop, so any frame can be re-rendered on its own and
+     the film cannot drift. Palette is the product's: navy #14304f, gold #c9922e. */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #0d2338; }
+  body {
+    font-family: Lexend, "Segoe UI", sans-serif; color: #fff;
+    background: radial-gradient(130% 110% at 28% 18%, #1d4878 0%, #14304f 45%, #0b1e31 100%);
+  }
+  .stage { position: absolute; inset: 0; }
+  section { position: absolute; inset: 0; opacity: 0; }
+
+  /* Brand furniture on every frame. */
+  .mark { position: absolute; top: 58px; left: 86px; display: flex; align-items: center; gap: 15px; z-index: 5; }
+  .mark .dot { width: 13px; height: 13px; border-radius: 50%; background: #c9922e; }
+  .mark .t { font-size: 25px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #a9c6e2; }
+  .stars { position: absolute; inset: 0; z-index: 0; }
+
+  .pad { position: absolute; left: 110px; right: 110px; top: 190px; bottom: 110px; }
+  .eyebrow { font-size: 29px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: #c9922e; }
+  h1 { font-size: 104px; font-weight: 300; line-height: 1.04; letter-spacing: -2.5px; }
+  h2 { font-size: 78px; font-weight: 300; line-height: 1.12; letter-spacing: -1.6px; max-width: 1400px; }
+  .sub { font-family: "Source Sans 3", sans-serif; font-size: 36px; line-height: 1.5; color: #b9d0e6; max-width: 1180px; }
+  .gold { color: #e8b44a; }
+  .rule { height: 4px; background: #c9922e; border-radius: 2px; }
+  .wordspan { display: inline-block; white-space: pre; }
+
+  /* A mail / card surface. */
+  .card { position: absolute; background: #fff; color: #16202c; border-radius: 16px;
+          box-shadow: 0 34px 90px rgba(0,0,0,.45); overflow: hidden; }
+  .card .bar { height: 11px; background: #14304f; }
+  .card .bar.g { background: #c9922e; }
+  .card .in { padding: 30px 36px; }
+  .card .from { font-family: "Source Sans 3", sans-serif; font-size: 25px; color: #6b7a8b; }
+  .card .subj { font-size: 34px; font-weight: 600; margin-top: 7px; }
+  .card .body { font-family: "Source Sans 3", sans-serif; font-size: 27px; line-height: 1.55; color: #44586b; margin-top: 16px; }
+
+  .pill { display: inline-flex; align-items: center; gap: 13px; padding: 16px 28px; border-radius: 999px;
+          background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.16);
+          font-family: "Source Sans 3", sans-serif; font-size: 31px; color: #dbe8f4; }
+  .pill .d { width: 13px; height: 13px; border-radius: 50%; background: #5fb97f; }
+  .pill.off { color: #e79a9a; border-color: rgba(231,154,154,.4); }
+  .pill.off .d { background: #c45a5a; }
+  /* The line is drawn by render(t) through --strikew, so it grows across the pill. */
+  .strike { position: relative; }
+  .strike::after { content: ""; position: absolute; left: 8%; top: 52%; height: 3px; border-radius: 2px;
+                   background: #c45a5a; width: var(--strikew, 0%); }
+
+  .big { font-size: 190px; font-weight: 300; letter-spacing: -6px; line-height: 1; }
+  .quote { border-left: 5px solid #c9922e; padding: 6px 0 6px 28px; font-family: "Source Sans 3", sans-serif;
+           font-style: italic; font-size: 38px; line-height: 1.45; color: #f0dcae; max-width: 1240px; }
+
+  /* The record document, drawn rather than screenshotted so it stays crisp. */
+  .doc { position: absolute; background: #fff; border-radius: 12px; box-shadow: 0 40px 110px rgba(0,0,0,.5); overflow: hidden; }
+  .doc .head { background: #14304f; padding: 26px 32px 22px; border-bottom: 5px solid #c9922e; }
+  .doc .head .e { font-size: 15px; letter-spacing: .2em; text-transform: uppercase; color: #9dc0e0; font-weight: 600; }
+  .doc .head .h { font-size: 34px; font-weight: 500; margin-top: 7px; }
+  .doc .head .m { font-family: "Source Sans 3", sans-serif; font-size: 18px; color: #cfe0f0; margin-top: 6px; }
+  .doc .lines { padding: 26px 32px; }
+  .doc .ln { height: 13px; border-radius: 7px; background: #dde4ec; margin-bottom: 15px; }
+  .doc .ln.h { height: 18px; background: #14304f; width: 38%; margin-bottom: 20px; }
+  .doc .q { border-left: 4px solid #c9922e; padding-left: 16px; margin: 20px 0; }
+  .doc .q .ln { background: #f0dcae; }
+
+  .sub2 { position: absolute; left: 110px; right: 110px; bottom: 54px; font-family: "Source Sans 3", sans-serif;
+          font-size: 28px; color: rgba(214,230,244,.62); }
+
+  /* A real screenshot of the app. Two shapes, because the shots are: a tall one of the
+     whole desk, and a wide one clipped to a single card. Both are placed to the right so
+     the type on the left never sits on top of the screen it is describing. */
+  .shot { position: absolute; border-radius: 16px; overflow: hidden;
+          box-shadow: 0 38px 100px rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.10); }
+  .shot img { display: block; width: 100%; height: auto; }
+  .shot.tall { right: 110px; top: 110px; width: 560px; }
+  .shot.wide { right: 90px; top: 250px; width: 980px; }
+  /* The counters are one wide band; given the full width they are finally readable. */
+  .shot.strip { right: 90px; left: 760px; top: 420px; width: auto; }
+
+  /* Both marks, on white chips. Neither logo is redrawn or recoloured - on this navy the
+     NIETE wordmark would otherwise vanish, so it is presented on its own ground, exactly as
+     the printed record does it. */
+  .chip { display: inline-flex; align-items: center; justify-content: center;
+          background: #fff; border-radius: 12px; box-shadow: 0 10px 28px rgba(0,0,0,.28); }
+  .chip img { display: block; width: auto; }
+
+  /* The quiet lockup that rides every frame, bottom right. */
+  /* Above the grade and the grain: a brand mark is never tinted or textured. */
+  .brandbar { position: absolute; right: 104px; bottom: 64px; z-index: 23;
+              display: flex; align-items: center; gap: 14px; }
+  .brandbar .chip { padding: 9px 14px; border-radius: 10px; }
+  .brandbar .chip img { height: 26px; }
+  .brandbar .chip.t img { height: 32px; }
+
+  /* The closing lockup, centred and large. */
+  .closer { position: absolute; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center; }
+  /* The two marks are the point of the last card, so they are given real size - roughly
+     three times what they are anywhere else - and sit above the grade so neither is
+     tinted. */
+  .closer .marks { display: flex; align-items: center; gap: 56px; position: relative; z-index: 23; }
+  .closer .chip { padding: 40px 62px; border-radius: 26px; }
+  .closer .chip img { height: 138px; }
+  .closer .chip.t img { height: 178px; }
+  .closer .eyebrow { letter-spacing: .22em; }
+  .closer h1 { font-size: 96px; font-weight: 300; letter-spacing: -1.8px; }
+  .closer .thanks { font-family: "Noto Nastaliq Urdu", "Lexend", serif; font-size: 70px;
+                    color: #e8b44a; line-height: 1.9; }
+  .closer .line { width: 0; height: 4px; background: #c9922e; border-radius: 2px; }
+  .closer .by { font-family: "Source Sans 3", sans-serif; font-size: 27px; color: #93b2cd; }
+
+  /* ---------- the top of the layer stack ----------
+     Content, then a grade that pulls the screenshots and the drawn scenes into one look,
+     then grain, then a vignette. Without these the frame reads as a flat slide; with them
+     it reads as film. All three are inert to layout and sit above everything. */
+  .grade, .grain, .vignette { position: absolute; inset: 0; pointer-events: none; }
+  .grade { z-index: 20; }
+  .grade .tint { position: absolute; inset: 0; background: #1d4878; mix-blend-mode: soft-light; opacity: .20; }
+  .grade .falloff { position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,.12), transparent 26%, transparent 72%, rgba(0,0,0,.22)); }
+  /* The offset is moved every frame, which is what stops it looking like a static texture. */
+  .grain { z-index: 21; opacity: .055; mix-blend-mode: overlay; background-size: 220px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E"); }
+  .vignette { z-index: 22;
+    background: radial-gradient(ellipse at center, transparent 56%, rgba(0,0,0,.26) 100%); }
+
+  /* Raftar presents. He opens large beside the title, then settles into the corner and
+     stays for the rest of the film, so the whole thing reads as him explaining it. The
+     ring breathes slowly - enough to feel alive, not enough to pull the eye off the type. */
+  .presenter { position: absolute; z-index: 6; transform-origin: center center; }
+  .presenter .ring { position: absolute; inset: -14px; border-radius: 50%;
+                     border: 3px solid rgba(201,146,46,.55); }
+  .presenter img { width: 100%; height: 100%; border-radius: 50%; display: block;
+                   box-shadow: 0 22px 60px rgba(0,0,0,.5); }
+  .presenter .tag { position: absolute; left: 50%; transform: translateX(-50%); bottom: -52px;
+                    font-size: 20px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+                    color: #a9c6e2; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="stars"><svg width="1920" height="1080"></svg></div>
+<div class="mark"><div class="dot"></div><div class="t">Exit Interviews</div></div>
+<div class="stage" id="stage"></div>
+<div class="brandbar" id="brandbar">
+  <div class="chip t"><img src="logo_taleemabad.png" alt=""></div>
+  <div class="chip"><img src="logo_niete.png" alt=""></div>
+</div>
+<div class="presenter" id="presenter">
+  <div class="ring"></div>
+  <img src="raftar.png" alt="">
+  <div class="tag" id="ptag">Raftar</div>
+</div>
+
+<div class="grade"><div class="tint"></div><div class="falloff"></div></div>
+<div class="grain" id="grain"></div>
+<div class="vignette"></div>
+
+<script>
+/* ---------- the scenes, as markup ---------- */
+const SCENES = [
+  // 0 — Raftar introduces himself. He is already large from the presenter track, so the
+  // type gives him room on the left and nothing competes with him.
+  {id:'s0', d:9.0, html:`
+    <div class="pad" style="top:300px;right:820px">
+      <div class="eyebrow" data-a="up" data-at="0.2">People &amp; Culture &middot; NIETE</div>
+      <h1 style="margin-top:26px;font-size:92px" data-a="words" data-at="0.6">I am Raftar.</h1>
+      <div class="sub" style="margin-top:30px;font-size:38px" data-a="up" data-at="2.6">Tahir Saleem&rsquo;s agent. Exit interviews are mine to run now &mdash;<br>here is the whole of it.</div>
+    </div>`},
+
+  // 1 — the claim
+  {id:'s1', d:6.0, html:`
+    <div class="pad" style="top:300px">
+      <h1 style="font-size:96px" data-a="words" data-at="0.2">Nobody has to<br>start it any more.</h1>
+      <div class="rule" style="width:0;margin-top:44px" data-a="rule" data-at="2.0"></div>
+    </div>`},
+
+  // 2 — the resignation arrives
+  {id:'s2', d:8.0, html:`
+    <div class="pad">
+      <h2 data-a="words" data-at="0.1">A resignation lands.</h2>
+      <div class="sub" style="margin-top:26px" data-a="up" data-at="1.6">It does not have to say so in the subject line.</div>
+    </div>
+    <div class="card" style="left:110px;top:520px;width:790px" data-a="card" data-at="2.4">
+      <div class="bar"></div>
+      <div class="in"><div class="from">From: the person leaving</div>
+      <div class="subj">Resignation Email</div>
+      <div class="body">Please accept my resignation&hellip;</div></div>
+    </div>
+    <div class="card" style="left:1000px;top:520px;width:790px" data-a="card" data-at="3.8">
+      <div class="bar g"></div>
+      <div class="in"><div class="from">From: a colleague</div>
+      <div class="subj">Fwd: Please take over</div>
+      <div class="body">&ldquo;@Tahir kindly arrange an exit interview for him.&rdquo;</div></div>
+    </div>`},
+
+  // 3 — the case opens
+  {id:'s3', d:6.0, html:`
+    <div class="pad">
+      <div class="eyebrow" data-a="up" data-at="0.1">Within fifteen minutes</div>
+      <h2 style="margin-top:26px" data-a="words" data-at="0.4">The case opens itself,<br>and you are told.</h2>
+    </div>
+    <div class="card" style="left:110px;top:620px;width:980px" data-a="card" data-at="2.0">
+      <div class="bar g"></div>
+      <div class="in"><div class="from">To: tahir.saleem@niete.edu.pk</div>
+      <div class="subj">Exit interview to schedule</div>
+      <div class="body">The case is open and waiting for a time.</div></div>
+    </div>`},
+
+  // 4 — THE DESK (real screen)
+  {id:'s4', d:7.0, html:`
+    <div class="pad" style="right:1000px">
+      <div class="eyebrow" data-a="up" data-at="0.1">Your screen</div>
+      <h2 style="font-size:62px;margin-top:22px" data-a="words" data-at="0.4">Four numbers,<br>top to bottom.</h2>
+      <div class="sub" style="font-size:30px;margin-top:26px" data-a="up" data-at="2.6">On you &middot; Ready &middot; Waiting &middot; Sent</div>
+    </div>
+    <div class="shot strip" data-kb="in" data-a="shot" data-at="0.9"><img src="shots/counters.png" alt=""></div>`},
+
+  // 5 — SCHEDULE (real screen, Send invite ringed)
+  {id:'s5', d:8.0, html:`
+    <div class="pad" style="right:1060px">
+      <div class="eyebrow" data-a="up" data-at="0.1">Step one</div>
+      <h2 style="font-size:58px;margin-top:22px" data-a="words" data-at="0.4">Pick a time.<br>Send invite.</h2>
+      <div class="sub" style="font-size:29px;margin-top:26px" data-a="up" data-at="3.0">The name and the address are already filled in.</div>
+    </div>
+    <div class="shot wide" data-kb="out" data-a="shot" data-at="0.9"><img src="shots/schedule.png" alt=""></div>`},
+
+  // 6 — who the invite reaches
+  {id:'s6', d:7.0, html:`
+    <div class="pad">
+      <h2 data-a="words" data-at="0.1">The invite reaches four.</h2>
+      <div style="margin-top:46px;display:flex;flex-direction:column;gap:20px;align-items:flex-start">
+        <div class="pill" data-a="pill" data-at="1.6"><div class="d"></div>The person leaving</div>
+        <div class="pill" data-a="pill" data-at="2.0"><div class="d"></div>Whoever asked for the interview</div>
+        <div class="pill" data-a="pill" data-at="2.4"><div class="d"></div>People &amp; Culture</div>
+        <div class="pill" data-a="pill" data-at="2.8"><div class="d"></div>The notetaker, which records the call</div>
+      </div>
+    </div>
+    <div class="sub2" data-a="up" data-at="5.0">The invite says plainly that it is recorded, and that nothing said is tied to clearance or references.</div>`},
+
+  // 7 — the record writes itself
+  {id:'s7', d:8.0, html:`
+    <div class="pad" style="right:980px">
+      <h2 style="font-size:64px" data-a="words" data-at="0.1">Then it writes<br>itself &mdash; in their<br>own words.</h2>
+      <div class="quote" style="margin-top:38px;font-size:34px" data-a="up" data-at="3.6">&ldquo;Haftay mein chaar din field mein, aur report phir bhi raat ko.&rdquo;</div>
+    </div>
+    <div class="doc" style="right:110px;top:180px;width:760px;height:740px" data-a="doc" data-at="0.8">
+      <div class="head">
+        <div class="e">Human Resources &middot; Separation Documentation</div>
+        <div class="h">Exit Interview Record</div>
+        <div class="m">Interviewed by Tahir Saleem</div>
+      </div>
+      <div class="lines">
+        <div class="ln h" data-l="1"></div>
+        <div class="ln" style="width:96%" data-l="2"></div><div class="ln" style="width:89%" data-l="3"></div>
+        <div class="ln h" style="width:30%" data-l="4"></div>
+        <div class="ln" style="width:93%" data-l="5"></div><div class="ln" style="width:72%" data-l="6"></div>
+        <div class="q"><div class="ln" style="width:84%" data-l="7"></div><div class="ln" style="width:58%;margin-bottom:0" data-l="8"></div></div>
+        <div class="ln" style="width:91%" data-l="9"></div><div class="ln" style="width:66%" data-l="10"></div>
+      </div>
+    </div>`},
+
+  // 8 — EDIT (real screen)
+  {id:'s8', d:7.5, html:`
+    <div class="pad" style="right:1060px">
+      <div class="eyebrow" data-a="up" data-at="0.1">Step two</div>
+      <h2 style="font-size:58px;margin-top:22px" data-a="words" data-at="0.4">Wrong word?<br>Fix it here.</h2>
+      <div class="sub" style="font-size:29px;margin-top:26px" data-a="up" data-at="3.2">From the phone. No laptop.</div>
+    </div>
+    <div class="shot wide" data-kb="in" data-a="shot" data-at="0.9"><img src="shots/edit.png" alt=""></div>`},
+
+  // 9 — RECIPIENTS (real screen) — the one that matters most
+  {id:'s9', d:8.5, html:`
+    <div class="pad" style="right:1060px">
+      <div class="eyebrow" data-a="up" data-at="0.1">Who receives it</div>
+      <h2 style="font-size:56px;margin-top:22px" data-a="words" data-at="0.4">Everyone on<br>the thread.</h2>
+      <div class="sub gold" style="font-size:32px;margin-top:26px" data-a="up" data-at="3.4">Never the person who left.<br>That is blocked outright.</div>
+    </div>
+    <div class="shot wide" data-kb="out" data-a="shot" data-at="0.9"><img src="shots/recipients.png" alt=""></div>`},
+
+  // 10 — FILE & SEND (real screen)
+  {id:'s10', d:6.5, html:`
+    <div class="pad" style="right:1060px">
+      <div class="eyebrow" data-a="up" data-at="0.1">Step three</div>
+      <h2 style="font-size:58px;margin-top:22px" data-a="words" data-at="0.4">File &amp; send.</h2>
+      <div class="sub" style="font-size:29px;margin-top:26px" data-a="up" data-at="2.6">Into Drive, and back onto the same email.</div>
+    </div>
+    <div class="shot wide" data-kb="in" data-a="shot" data-at="0.9"><img src="shots/review.png" alt=""></div>`},
+
+  // 11 — REGISTER (real screen)
+  {id:'s11', d:7.0, html:`
+    <div class="pad" style="right:1000px">
+      <div class="eyebrow" data-a="up" data-at="0.1">On the left</div>
+      <h2 style="font-size:58px;margin-top:22px" data-a="words" data-at="0.4">Interviews<br>on record.</h2>
+      <div class="sub" style="font-size:29px;margin-top:26px" data-a="up" data-at="2.8">Every one that has been filed, with its PDF.</div>
+    </div>
+    <div class="shot wide" data-kb="out" data-a="shot" data-at="0.9"><img src="shots/register.png" alt=""></div>`},
+
+  // 12 — the last idea
+  {id:'s12', d:7.0, html:`
+    <div class="pad" style="top:300px">
+      <h2 style="font-size:84px" data-a="words" data-at="0.2">Two decisions<br>stay human.</h2>
+      <div class="sub" style="margin-top:36px;font-size:38px" data-a="up" data-at="2.4">When to meet.</div>
+      <div class="sub" style="margin-top:10px;font-size:38px" data-a="up" data-at="3.1">And what gets sent.</div>
+      <div class="rule" style="width:0;margin-top:46px" data-a="rule" data-at="4.4"></div>
+    </div>`},
+
+  // 13 — the closing card. The two marks at full size, and a thank you.
+  {id:'s13', d:8.5, html:`
+    <div class="closer">
+      <div class="marks">
+        <div class="chip t" data-a="chip" data-at="0.3"><img src="logo_taleemabad.png" alt=""></div>
+        <div class="chip" data-a="chip" data-at="0.7"><img src="logo_niete.png" alt=""></div>
+      </div>
+      <div class="line" data-a="rule" data-at="1.8" style="margin:50px 0 36px"></div>
+      <div class="thanks" data-a="up" data-at="2.2">شکریہ</div>
+      <h1 style="font-size:58px;margin-top:4px" data-a="words" data-at="3.0">Thank you</h1>
+      <div class="by" style="margin-top:46px" data-a="up" data-at="4.4">Exit Interviews &middot; People &amp; Culture &mdash; built and run by Raftar</div>
+    </div>`},
+];
+
+/* ---------- timeline ---------- */
+const CROSS = 0.55;
+let t0 = 0;
+SCENES.forEach(s => { s.t0 = t0; t0 += s.d; });
+const TOTAL = t0;
+
+/* ---------- build the DOM once ---------- */
+const stage = document.getElementById('stage');
+SCENES.forEach(s => {
+  s.dBase = s.d;   // the length this scene's cue times were written for
+  const el = document.createElement('section');
+  el.id = s.id;
+  el.innerHTML = s.html;
+  stage.appendChild(el);
+  s.el = el;
+  // Emphasis runs are tokenised before the word split, or *gold* renders as asterisks.
+  el.querySelectorAll('[data-a="words"]').forEach(h => {
+    const out = [];
+    h.innerHTML.split(/(<br\s*\/?>)/i).forEach(part => {
+      if (/^<br/i.test(part)) { out.push(part); return; }
+      part.split(/(\*[^*]+\*)/g).forEach(run => {
+        if (!run) return;
+        const gold = /^\*.*\*$/.test(run);
+        const text = gold ? run.slice(1, -1) : run;
+        text.split(/(\s+)/).forEach(w => {
+          if (!w) return;
+          out.push(`<span class="wordspan${gold ? ' gold' : ''}">${w}</span>`);
+        });
+      });
+    });
+    h.innerHTML = out.join('');
+  });
+});
+
+/* a faint constellation, seeded so every render is identical */
+(function stars() {
+  let seed = 20261026;
+  const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const svg = document.querySelector('.stars svg');
+  let d = '';
+  for (let i = 0; i < 70; i++) {
+    const x = 1150 + rnd() * 740, y = 40 + rnd() * 420, r = 1 + rnd() * 2.2;
+    d += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" fill="#c9922e" opacity="${(0.10 + rnd() * 0.22).toFixed(2)}"/>`;
+  }
+  svg.innerHTML = d;
+})();
+
+/* ---------- easing ---------- */
+const clamp = v => v < 0 ? 0 : v > 1 ? 1 : v;
+const expo = u => 1 - Math.pow(2, -10 * clamp(u));
+const ramp = (u, at, dur) => expo(clamp((u - at) / dur));
+
+/* ---------- draw one scene at local time u ---------- */
+function drawScene(s, u, alpha) {
+  const dur = s.d;
+  s.el.style.opacity = alpha;
+  if (alpha === 0) return;
+
+  // An exit is faster than an entrance, and the scene lifts a little as it goes.
+  const EXIT = 0.34;
+  const leaving = clamp((u - (dur - EXIT)) / EXIT);
+  s.el.style.transform = leaving ? 'translateY(' + (-14 * leaving).toFixed(2) + 'px)' : '';
+
+  s.el.querySelectorAll('[data-a]').forEach(n => {
+    // Cue times are written against the scene length in SCENES. A real voice-over makes
+    // scenes longer, so they are scaled rather than taken literally - otherwise every
+    // scene finishes revealing itself in its first few seconds and then sits still while
+    // the narration keeps going, which reads as the picture not matching the words.
+    const stretch = s.dBase ? (dur / s.dBase) : 1;
+    const at = parseFloat(n.dataset.at || 0) * stretch;
+    const kind = n.dataset.a;
+
+    if (kind === 'words') {
+      const spans = n.querySelectorAll('.wordspan');
+      spans.forEach((w, i) => {
+        const p = ramp(u, at + i * 0.055, 0.5);
+        w.style.opacity = p;
+        w.style.transform = `translateY(${(1 - p) * 26}px)`;
+      });
+      return;
+    }
+    const p = ramp(u, at, kind === 'card' || kind === 'doc' || kind === 'shot' ? 0.7 : 0.55);
+    if (kind === 'up') {
+      n.style.opacity = p; n.style.transform = `translateY(${(1 - p) * 22}px)`;
+    } else if (kind === 'rule') {
+      n.style.width = (p * (n.classList.contains('line') ? 300 : 240)) + 'px'; n.style.opacity = p;
+    } else if (kind === 'chip') {
+      n.style.opacity = p;
+      n.style.transform = 'translateY(' + ((1 - p) * 26) + 'px) scale(' + (0.9 + p * 0.1) + ')';
+    } else if (kind === 'shot') {
+      // Ken Burns: the screenshot keeps drifting for the whole scene, alternating
+      // direction between consecutive shots so two in a row never move the same way.
+      // A still that holds dead still for seven seconds is what makes a film look flat.
+      const life = clamp((u - at) / Math.max(1, dur - at));
+      const dir = n.dataset.kb === 'out' ? -1 : 1;
+      const kbScale = 1 + dir * 0.055 * life;
+      const kbPan = dir * -18 * life;
+      n.style.opacity = p;
+      n.style.transform = `translate(${kbPan.toFixed(2)}px, ${((1 - p) * 44).toFixed(2)}px) `
+        + `scale(${(kbScale * (0.975 + p * 0.025)).toFixed(4)})`;
+    } else if (kind === 'card') {
+      n.style.opacity = p; n.style.transform = `translateY(${(1 - p) * 40}px) scale(${0.97 + p * 0.03})`;
+    } else if (kind === 'pill') {
+      n.style.opacity = p; n.style.transform = `translateX(${(1 - p) * -34}px)`;
+    } else if (kind === 'strikeout') {
+      n.style.opacity = p; n.style.transform = `translateX(${(1 - p) * -34}px)`;
+      const line = ramp(u, at + 0.5, 0.5);
+      n.style.setProperty('--sw', (line * 84) + '%');
+      n.querySelector('.d').style.opacity = 1;
+      // the rule itself is drawn by width on the ::after through a CSS variable
+      n.style.cssText += `;--strikew:${(line * 84).toFixed(1)}%`;
+    } else if (kind === 'count') {
+      const to = parseInt(n.dataset.to, 10);
+      n.style.opacity = p;
+      n.textContent = String(Math.round(p * to));
+    } else if (kind === 'doc') {
+      n.style.opacity = p; n.style.transform = `translateY(${(1 - p) * 46}px)`;
+      n.querySelectorAll('[data-l]').forEach(l => {
+        const li = parseInt(l.dataset.l, 10);
+        const lp = ramp(u, at + 0.9 + li * 0.17, 0.4);
+        l.style.transform = `scaleX(${lp})`;
+        l.style.transformOrigin = 'left center';
+        l.style.opacity = lp > 0 ? 1 : 0;
+      });
+    }
+  });
+}
+
+/* ---------- the pure function the renderer calls ---------- */
+window.render = function (t) {
+  const i = Math.max(0, SCENES.findIndex(s => t < s.t0 + s.d));
+  const idx = i === -1 ? SCENES.length - 1 : i;
+  SCENES.forEach((s, k) => { if (k !== idx && k !== idx - 1) s.el.style.opacity = 0; });
+
+  const cur = SCENES[idx];
+  const u = t - cur.t0;
+  const into = clamp(u / CROSS);
+  drawScene(cur, u, idx === 0 ? Math.min(1, u / 0.5) : into);
+  // During the crossfade the previous scene is still drawn, at its own end state - and once
+  // the crossfade is over it must be switched OFF explicitly. The loop above deliberately
+  // skips idx-1, so without this it keeps the opacity it had and shows through the rest of
+  // the scene.
+  if (idx > 0) {
+    const prev = SCENES[idx - 1];
+    if (into < 1) drawScene(prev, prev.d, 1 - into);
+    else prev.el.style.opacity = 0;
+  }
+  placePresenter(t);
+  const gf = Math.round(t * 30);
+  grain.style.backgroundPosition = ((gf * 7) % 220) + 'px ' + ((gf * 13) % 220) + 'px';
+  // On the closing card the two marks are the subject; Raftar and the corner lockup
+  // both step out of the way rather than competing with them.
+  const last = SCENES[SCENES.length - 1];
+  const onCloser = t >= last.t0;
+  const fade = onCloser ? 1 - clamp((t - last.t0) / 0.5) : 1;
+  pres.style.opacity = String(Number(pres.style.opacity || 1) * fade);
+  document.getElementById('brandbar').style.opacity = String(fade);
+};
+/* Raftar's own track, driven by absolute time rather than by any one scene: he arrives
+   large beside the title, then travels to the bottom-left corner and stays there. */
+const pres = document.getElementById('presenter');
+const grain = document.getElementById('grain');
+const ptag = document.getElementById('ptag');
+const MOVE_AT = 7.6, MOVE_FOR = 1.2;      // he holds through the introduction, then settles
+const BIG = { size: 330, x: 1230, y: 330 };
+const SMALL = { size: 128, x: 110, y: 830 };
+
+function placePresenter(t) {
+  const inTrip = expo(clamp((t - MOVE_AT) / MOVE_FOR));
+  const mix = (a, b) => a + (b - a) * inTrip;
+  const size = mix(BIG.size, SMALL.size);
+  pres.style.width = size + 'px';
+  pres.style.height = size + 'px';
+  pres.style.left = mix(BIG.x, SMALL.x) + 'px';
+  pres.style.top = mix(BIG.y, SMALL.y) + 'px';
+  pres.style.opacity = expo(clamp((t - 0.4) / 0.9));
+  ptag.style.opacity = 1 - inTrip;          // the name only while he is the subject
+  ptag.style.fontSize = (20 * (1 - inTrip * 0.3)) + 'px';
+  // A slow breath on the ring so a still frame never looks frozen.
+  const breath = 1 + 0.045 * Math.sin(t * 1.5);
+  pres.querySelector('.ring').style.transform = `scale(${breath.toFixed(4)})`;
+  pres.querySelector('.ring').style.opacity = (0.45 + 0.25 * Math.sin(t * 1.5)).toFixed(3);
+}
+
+/* The scene lengths above are only a fallback. Once there is a voice-over, every scene is
+   exactly as long as its real recorded line plus a lead-in and a hold, so the picture
+   cannot drift from the words. The renderer passes timeline.json in before drawing. */
+window.setTimeline = function (tl) {
+  const by = Object.fromEntries(tl.scenes.map(s => [s.id, s]));
+  let t = 0;
+  SCENES.forEach(s => {
+    const m = by[s.id];
+    if (m) s.d = m.d;
+    s.t0 = t; t += s.d;
+  });
+  window.FILM.total = t;
+  window.FILM.scenes = SCENES.map(s => ({ id: s.id, t0: s.t0, d: s.d }));
+  return window.FILM;
+};
+
+window.FILM = { total: TOTAL, scenes: SCENES.map(s => ({ id: s.id, t0: s.t0, d: s.d })) };
+window.render(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>آواز کی جانچ — Exit Interviews</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --navy:#14304f; --gold:#c9922e; --ink:#16202c; --muted:#5b6b7d; --line:#dfe5ec;
+          --ok:#1c6b43; --warn:#8a6314; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f4f6f9; color:var(--ink); font-family:"Noto Nastaliq Urdu", serif; }
+  header { background:var(--navy); color:#fff; border-bottom:5px solid var(--gold); padding:30px 0 26px; }
+  header .in, .wrap { max-width:980px; margin:0 auto; padding:0 24px; }
+  header h1 { margin:0; font-size:28px; font-weight:600; line-height:2; }
+  header p { margin:6px 0 0; font-size:16px; color:#cfe0f0; line-height:2.1; }
+  .wrap { padding-bottom:80px; padding-top:26px; }
+
+  .how { background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px 24px; margin-bottom:26px;
+         font-size:17px; line-height:2.3; }
+  .how b { color:var(--navy); }
+
+  .row { background:#fff; border:1px solid var(--line); border-right:5px solid var(--gold);
+         border-radius:12px; padding:18px 22px; margin-bottom:14px; }
+  .row.off { border-right-color:#c45a5a; }
+  .top { display:flex; align-items:center; gap:14px; margin-bottom:10px; }
+  .n { flex:none; font-family:"Source Sans 3",sans-serif; direction:ltr; background:var(--navy);
+       color:#fff; font-weight:600; font-size:14px; border-radius:8px; padding:5px 11px; }
+  .fit { font-family:"Source Sans 3",sans-serif; direction:ltr; font-size:13px; font-weight:600;
+         padding:4px 10px; border-radius:999px; background:#eaf7ef; color:var(--ok); }
+  .fit.warn { background:#fdf5e4; color:var(--warn); }
+  audio { flex:1; min-width:0; height:36px; }
+  .t { font-size:23px; line-height:2.5; }
+  .en-inline { font-family:"Source Sans 3",sans-serif; direction:ltr; unicode-bidi:isolate;
+               white-space:nowrap; font-weight:600; color:#14304f; }
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>آواز کی جانچ</h1>
+  <p>آپ کی ریکارڈنگ، چودہ ٹکڑوں میں کاٹی ہوئی</p>
+</div></header>
+
+<div class="wrap">
+  <div class="how">
+    ہر ٹکڑا بجا کر دیکھیں کہ <b>آواز اور نیچے لکھی line ایک ہی ہے یا نہیں۔</b> ایک منٹ لگے گا۔<br>
+    اگر سب ٹھیک ہیں تو بس "ٹھیک ہیں" کہہ دیں — میں فلم پر لگا دوں گا۔<br>
+    کوئی غلط ہو تو <b>صرف اُس کا نمبر</b> بتا دیں، میں وہی cut سرکا دوں گا۔<br>
+    <span style="color:var(--warn)">نارنجی نشان</span> اُن پر ہے جہاں میری اپنی پیمائش کہتی ہے کہ cut
+    شاید تھوڑا آگے پیچھے ہے — اُنہیں خاص طور پر سن لیں۔
+  </div>
+  <div id="list"></div>
+</div>
+
+<script>
+// Rendered from split-report.json so the page always shows the cut that actually exists.
+fetch('split-report.json').then(r => r.json()).then(d => {
+  const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  // Latin runs inside RTL text reorder unless isolated.
+  const mark = s => esc(s).replace(/([A-Za-z][A-Za-z .&]*[A-Za-z]|[A-Za-z]+)/g,
+    m => '<span class="en-inline">' + m + '</span>');
+  document.getElementById('list').innerHTML = d.rows.map((r, i) => {
+    const off = Math.abs(r.err) / r.exp > 0.15;
+    return `<div class="row ${off ? 'off' : ''}">
+      <div class="top">
+        <span class="n">${i + 1}</span>
+        <audio controls preload="none" src="vo-split/${r.id}.mp3"></audio>
+        <span class="fit ${off ? 'warn' : ''}">${r.got.toFixed(1)}s${off ? ' · check' : ''}</span>
+      </div>
+      <div class="t">${mark(r.text)}</div>
+    </div>`;
+  }).join('');
+});
+</script>
+</body>
+</html>

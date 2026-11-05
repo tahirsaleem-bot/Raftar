@@ -1,0 +1,140 @@
+{
+  "cases": [
+    {
+      "id": "demo-done",
+      "stage": "done",
+      "dismissed": false,
+      "leaver": {
+        "name": "Saad Iqbal",
+        "email": "saad.iqbal@niete.edu.pk",
+        "role": "Program Officer"
+      },
+      "interview": {
+        "startIso": "2026-10-07T11:28:05.441Z"
+      },
+      "drive": {
+        "id": "f3",
+        "link": "https://drive.google.com/file/d/f3/view"
+      },
+      "sentTo": "hina.khalid@taleemabad.com",
+      "request": {
+        "threadId": "t3",
+        "from": "Hina Khalid <hina.khalid@taleemabad.com>",
+        "subject": "Re: Resignation"
+      },
+      "createdAt": "2026-10-27T11:28:05.439Z"
+    },
+    {
+      "id": "demo-review",
+      "stage": "review",
+      "leaver": {
+        "name": "Adeel Raza",
+        "email": "adeel.raza@niete.edu.pk",
+        "role": "Coach, NIETE"
+      },
+      "interview": {
+        "startIso": "2026-10-24T11:28:05.441Z"
+      },
+      "record": {
+        "name": "Adeel Raza",
+        "role": "Coach, NIETE",
+        "pronoun": "he",
+        "facts": [
+          "2 years 1 month",
+          "46 minutes",
+          "Voluntary resignation",
+          "18 October 2026"
+        ],
+        "tenure": "Approximately 2 years and 1 month",
+        "dateMode": "18 October 2026 - recorded video call (46 minutes)",
+        "separation": "Voluntary resignation",
+        "reasonsLead": "He gave his reasons in the order below.",
+        "reasons": [
+          "<strong>A post closer to home.</strong> The travel had become the hardest part of the week.",
+          "<strong>Workload in the last two quarters.</strong> He said it had been raised before."
+        ],
+        "strengths": [
+          "The coaching team, which he described as the reason he stayed as long as he did.",
+          "The freedom to run his own district."
+        ],
+        "flags": [
+          {
+            "number": "4.1",
+            "title": "Travel load in the southern districts",
+            "body": "He reported four field days a week with no adjustment to the reporting deadlines.",
+            "quote": "Haftay mein chaar din field mein, aur report phir bhi raat ko.",
+            "restricted": false
+          },
+          {
+            "number": "4.2",
+            "title": "A promotion he was not told about",
+            "body": "He learned of an internal vacancy after it had closed.",
+            "quote": "",
+            "restricted": false
+          }
+        ],
+        "named": [
+          {
+            "person": "Area Lead (not named)",
+            "register": "neutral",
+            "what": "He raised the travel load with them twice.",
+            "ref": "4.1"
+          }
+        ],
+        "requests": [
+          "A written reason when an internal application is not shortlisted."
+        ],
+        "gaps": []
+      },
+      "restrictedSections": [],
+      "filename": "Exit_Interview_Record_Adeel_Raza_2026-10-18.pdf",
+      "request": {
+        "threadId": "t2",
+        "rfc822": "<c@d>",
+        "from": "Hina Khalid <hina.khalid@taleemabad.com>",
+        "subject": "Re: Resignation — Coach",
+        "date": "Tue, 27 Oct 2026 11:28:05 GMT"
+      },
+      "requestThread": [
+        {
+          "from": "Adeel Raza <adeel.raza@niete.edu.pk>",
+          "to": "hina.khalid@taleemabad.com",
+          "cc": ""
+        },
+        {
+          "from": "Hina Khalid <hina.khalid@taleemabad.com>",
+          "to": "tahir.saleem@niete.edu.pk",
+          "cc": "hr@taleemabad.com, kamran.shah@taleemabad.com"
+        }
+      ],
+      "createdAt": "2026-10-27T11:28:05.440Z"
+    },
+    {
+      "id": "demo-new",
+      "stage": "new",
+      "leaver": {
+        "name": "Mehwish Tariq",
+        "email": "mehwish.tariq@niete.edu.pk",
+        "role": "Regional Manager"
+      },
+      "lastWorkingDay": "30 November",
+      "request": {
+        "threadId": "t1",
+        "rfc822": "<a@b>",
+        "from": "Hina Khalid <hina.khalid@taleemabad.com>",
+        "subject": "Re: Resignation — Regional Manager",
+        "date": "Tue, 27 Oct 2026 11:28:05 GMT"
+      },
+      "requestThread": [
+        {
+          "from": "Hina Khalid <hina.khalid@taleemabad.com>",
+          "to": "tahir.saleem@niete.edu.pk",
+          "cc": "hr@taleemabad.com",
+          "subject": "Re: Resignation"
+        }
+      ],
+      "createdAt": "2026-10-27T11:28:05.441Z"
+    }
+  ],
+  "seenIds": []
+}

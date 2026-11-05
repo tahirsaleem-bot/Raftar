@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Exit Interview Guide — Sara Fatima</title>
+<style>
+  @page { size: A4; margin: 12mm 11mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Calibri, "Helvetica Neue", Arial, sans-serif;
+    font-size: 10pt; line-height: 1.45; color: #1f2733;
+    max-width: 880px; margin: 0 auto; padding: 0 0 30px; background: #fff;
+  }
+
+  .masthead { background: #14304f; color: #fff; padding: 18px 24px 15px; border-bottom: 5px solid #c9922e; }
+  .masthead .eyebrow { font-size: 8pt; letter-spacing: 2px; text-transform: uppercase; color: #9dc0e0; margin: 0 0 4px; font-weight: 600; }
+  .masthead h1 { font-size: 20pt; margin: 0 0 5px; font-weight: 600; letter-spacing: -0.3px; }
+  .masthead .meta { font-size: 9pt; color: #cfe0f0; margin: 0; }
+  .masthead .meta b { color: #fff; }
+  .conf { display: inline-block; margin-top: 9px; font-size: 7.5pt; font-weight: 700; letter-spacing: 1.2px;
+          text-transform: uppercase; background: #8f2f2f; color: #ffe9e9; padding: 3px 10px; border-radius: 3px; }
+
+  .wrap { padding: 0 24px; }
+
+  h2 { font-size: 11.5pt; margin: 19px 0 8px; padding: 0 0 5px; border-bottom: 2px solid #14304f;
+       color: #14304f; font-weight: 600; }
+  h2 .num { display: inline-block; width: 20px; height: 20px; line-height: 20px; text-align: center;
+            background: #14304f; color: #fff; border-radius: 3px; font-size: 9pt; margin-right: 8px; vertical-align: 2px; }
+  p { margin: 0 0 5px; }
+  ul { margin: 0 0 8px; padding-left: 19px; }
+  li { margin: 0 0 3px; }
+  li::marker { color: #4a86b8; }
+  strong { color: #0f2333; }
+
+  /* header fill-in strip */
+  .fillin { display: table; width: 100%; border-spacing: 7px 0; margin: 12px 0 4px; }
+  .fillin .cell { display: table-cell; width: 25%; background: #f2f6fa; border-top: 3px solid #4a86b8; padding: 7px 9px; }
+  .fillin .lbl { font-size: 7pt; letter-spacing: 1px; text-transform: uppercase; color: #5b7896; font-weight: 600; }
+  .fillin .blank { border-bottom: 1px solid #9fb2c4; height: 15px; margin-top: 5px; }
+
+  /* script the interviewer reads aloud */
+  .script { background: #eef4fb; border-left: 5px solid #2f6da8; padding: 11px 15px; margin: 9px 0 12px; }
+  .script .hdr { font-size: 8pt; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+                 color: #1d4d7c; margin-bottom: 5px; }
+  .script p { font-size: 10.5pt; color: #16334e; margin: 0 0 6px; }
+  .script p:last-child { margin-bottom: 0; }
+
+  /* question block */
+  .q { margin: 0 0 13px; page-break-inside: avoid; }
+  .q .qtext { background: #f4f7fa; border-left: 5px solid #14304f; padding: 7px 12px; font-size: 10.5pt; font-weight: 600; color: #0f2333; }
+  .q .qtext .n { display: inline-block; width: 19px; height: 19px; line-height: 19px; text-align: center;
+                 background: #c9922e; color: #fff; border-radius: 50%; font-size: 8.5pt; margin-right: 8px; vertical-align: 1px; }
+  .q .why { font-size: 8.5pt; color: #6b7a8c; font-style: italic; margin: 4px 0 5px; padding-left: 12px; }
+  .q .why b { color: #8a2020; font-style: normal; }
+  .q .followup { font-size: 9pt; color: #1d4d7c; margin: 3px 0 5px; padding-left: 12px; }
+  .q .followup b { font-size: 7.5pt; letter-spacing: 0.8px; text-transform: uppercase; color: #5b7896; }
+
+  .lines .ln { border-bottom: 1px solid #d6dee6; height: 19px; }
+
+  /* tick list */
+  table { width: 100%; border-collapse: collapse; margin: 7px 0 12px; font-size: 9.5pt; }
+  th, td { border: 1px solid #ccd6e0; padding: 5px 8px; text-align: left; vertical-align: middle; }
+  th { background: #14304f; color: #fff; font-weight: 600; font-size: 8.5pt; letter-spacing: 0.4px; text-transform: uppercase; }
+  tbody tr:nth-child(even) td { background: #f6f9fc; }
+  .tick { width: 13px; height: 13px; border: 1.5px solid #7e93a8; display: inline-block; vertical-align: -2px; }
+
+  .box { padding: 9px 13px; margin: 9px 0; border-left: 5px solid; border-radius: 0 3px 3px 0; }
+  .box .hdr { font-size: 8pt; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+  .box p:last-child { margin-bottom: 0; }
+  .warn { background: #fdf6e6; border-color: #c9922e; } .warn .hdr { color: #8a6314; }
+  .crit { background: #fbeeee; border-color: #a83232; } .crit .hdr { color: #8a2020; }
+  .good { background: #eef9f1; border-color: #2e8b57; } .good .hdr { color: #1e6b40; }
+
+  .foot { margin: 18px 24px 0; padding: 10px 0 0; border-top: 2px solid #14304f; font-size: 8pt; color: #64748b; }
+  .pb { page-break-before: always; }
+
+  @media print {
+    body { padding: 0; }
+    .masthead { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    h2 { page-break-after: avoid; }
+    .q, .script, table, .box { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <p class="eyebrow">Human Resources &nbsp;·&nbsp; Exit Interview — Interviewer's Working Sheet</p>
+  <h1>Sara Fatima — Regional Manager</h1>
+  <p class="meta">Interviewer: <b>Tahir Saleem</b> &nbsp;·&nbsp; Print this sheet and write your notes directly on it</p>
+  <span class="conf">Confidential — Internal Use Only</span>
+</div>
+
+<div class="wrap">
+
+<div class="fillin">
+  <div class="cell"><div class="lbl">Interview Date</div><div class="blank"></div></div>
+  <div class="cell"><div class="lbl">Start / End Time</div><div class="blank"></div></div>
+  <div class="cell"><div class="lbl">Tenure</div><div class="blank"></div></div>
+  <div class="cell"><div class="lbl">Last Working Day</div><div class="blank"></div></div>
+</div>
+
+<h2><span class="num">0</span>Interview se pehle — 5 minute</h2>
+<ul>
+  <li><strong>Baithne ka andaaz:</strong> mez ke aar paar aamne saamne mat baithiye — thora side par. Aamne saamne baithna interview lagta hai, saath baithna baat cheet.</li>
+  <li><strong>Phone silent</strong> aur darwaza band. Beech mein koi andar na aaye.</li>
+  <li><strong>Notebook khol lijiye, magar pehle 5 minute likhiye mat.</strong> Jab woh dekhegi ke aap foran likhna shuru nahi kar rahe, guard giregi. Likhna tab shuru kijiye jab woh khud detail mein aa jaye.</li>
+  <li><strong>Waqt:</strong> 35–45 minute rakhiye. Jaldi mat kijiye — asal baat aakhir ke 15 minute mein aati hai.</li>
+</ul>
+
+<div class="crit box">
+  <div class="hdr">Sab se aham hidayat</div>
+  <p>Naveera ke interview mein jo baatein aayin, un ka <strong>zikr bilkul mat kijiye</strong> — na naam, na koi jumla, na ishara. Kuch sawaal un flags ko cross-check karte hain, magar woh sab khule andaaz mein rakhe gaye hain. Agar baat sach hai, woh khud saamne aa jayegi. Agar aap ne pehle bata diya, to aap ko sirf woh jawab milega jo woh dena chahti hai.</p>
+</div>
+
+<h2><span class="num">1</span>Shuruaat — ye lafz parh dijiye</h2>
+<div class="script">
+  <div class="hdr">Opening — taqreeban isi tarah kahiye</div>
+  <p>"Sara, sab se pehle to shukriya ke aap ne itna waqt humare saath guzara.</p>
+  <p>Ye feedback session hai — ye har us bande ke saath hota hai jo ja raha hai, koi khaas baat nahi. Maqsad sirf ye hai ke aap ne jo dekha, us se idara kuch seekh sake.</p>
+  <p>Aap ki koi baat aap ke against use nahi hogi, na hi ye clearance ya reference se juri hai. Jo cheez aap flag karna chahengi, woh main likh kar aage bhejunga.</p>
+  <p>Aur aik baat — aap RM rahi hain, to aap ko woh cheezein nazar aayi hongi jo coaches ko nahi aatin. Wahi meri asal dilchaspi hai. Jitna khul kar bologi, utna faida hoga."</p>
+</div>
+<p style="font-size:9pt;color:#6b7a8c;font-style:italic;">Phir 2–3 minute halki baat: <strong>"To aagay ka kya plan hai?"</strong> — seedha "kyun ja rahi ho" se shuru mat kijiye. Bandah khul jata hai.</p>
+
+<h2><span class="num">2</span>Janay ki wajah</h2>
+
+<div class="q">
+  <div class="qtext"><span class="n">1</span>Ja kahan rahi hain, aur asal wajah kya bani?</div>
+  <div class="why">Pehla jawab aksar bana hua hota hai. Sun lijiye, tokiye mat, phir agla sawaal.</div>
+  <div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div></div>
+</div>
+
+<div class="q">
+  <div class="qtext"><span class="n">2</span>Us ke ilawa aur kuch? Aksar aik hi wajah nahi hoti.</div>
+  <div class="why">Yahan se asal wajah nikalti hai. Ye sawaal poochna <b>mat bhooliye</b> — zyadatar log pehli wajah bata kar ruk jate hain.</div>
+  <div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div></div>
+</div>
+
+<div class="q">
+  <div class="qtext"><span class="n">3</span>Aisi kya cheez hoti ke aap na jaatin?</div>
+  <div class="why">Poore interview ka sab se qeemti sawaal. "Kyun ja rahi ho" ka jawab diplomatic hota hai — is ka sach hota hai.</div>
+  <div class="followup"><b>Agar jawab ghol mol ho:</b> "Faisla karne se pehle kisi se baat ki thi? Kya jawab mila?"</div>
+  <div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div></div>
+</div>
+
+<h2><span class="num">3</span>RM hone ke naatay — jo sirf woh bata sakti hai</h2>
+
+<div class="q">
+  <div class="qtext"><span class="n">4</span>Aap ki team ke jo coaches gaye ya ja rahe hain — aap ki nazar mein asal wajah kya hai?</div>
+  <div class="why">Ye sawaal sirf RM se pooch sakte hain. Us ne apni team ke exits qareeb se dekhe hain, aur ab khud ja rahi hai — sach bolne mein ab kuch nahi rakha.</div>
+  <div class="followup"><b>Follow-up:</b> "Kya koi aisa pattern hai jo aap ko nazar aaya — ke log aik hi wajah se ja rahe hain?"</div>
+  <div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div>
+</div>
+
+<div class="q">
+  <div class="qtext"><span class="n">5</span>Leadership se jo faisle aate thay, woh aap team tak pohanchati thin. Jab aap khud convinced na hotin — tab kya karti thin?</div>
+  <div class="why">Is poore interview ka sab se aham sawaal. Ye dekhna hai ke RM khud is darmiyan kahan khari thi — kya woh bhi phansi hui thi, ya usne raise karna chhor diya tha.</div>
+  <div class="followup"><b>Follow-up:</b> "Kabhi koi cheez upar raise ki? Us ka kya bana?"</div>
+  <div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div>
+</div>
+
+<div class="q pb">
+  <div class="qtext"><span class="n">6</span>Naye tools ka teachers aur aap ke coaches par kya asar dekha aap ne?</div>
+  <div class="why">Khula rakhiye. "Asaan hua ya mushkil?" — dono option dena zaroori hai, warna leading ho jata hai.</div>
+  <div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div>
+</div>
+
+<div class="q">
+  <div class="qtext"><span class="n">7</span>RM level par aapas ki communication — kis baat ki line hai aur kis ki nahi — us mein koi cheez behtar honi chahiye?</div>
+  <div class="why">Bilkul neutral rakhiye, ilzaam ki shakal na de. Agar woh khud maan le ke "haan, hum log aksar coaches ki baaten kar lete hain," to ye finding bohat qeemti hai. <b>Agar woh khud na uthaye, zabardasti mat khodiye.</b></div>
+  <div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div>
+</div>
+
+<div class="q">
+  <div class="qtext"><span class="n">8</span>Aap ki jagah jo naya RM aayega — usay pehle din se kya pata hona chahiye?</div>
+  <div class="why">Log apne liye shikayat nahi karte, "naye bande" ke liye sach bol dete hain. Aksar poore interview ka sab se seedha jawab yahan aata hai.</div>
+  <div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div>
+</div>
+
+<h2><span class="num">4</span>Function check — tezi se poochiye</h2>
+<p style="font-size:9pt;color:#6b7a8c;">Har aik par sirf naam le kar poochiye: "…se koi issue?" Jahan "nahi" ho, tick laga kar aage barh jayein. Jahan ruke, wahan likhiye.</p>
+<table>
+  <tr><th style="width:24%">Function</th><th style="width:9%">OK</th><th>Agar koi issue hai</th></tr>
+  <tr><td><strong>HR</strong> — salary, leaves, documentation</td><td style="text-align:center"><span class="tick"></span></td><td></td></tr>
+  <tr><td><strong>Admin</strong></td><td style="text-align:center"><span class="tick"></span></td><td></td></tr>
+  <tr><td><strong>IT</strong></td><td style="text-align:center"><span class="tick"></span></td><td></td></tr>
+  <tr><td><strong>Operations &amp; Logistics</strong></td><td style="text-align:center"><span class="tick"></span></td><td></td></tr>
+  <tr><td><strong>Hub &amp; transport</strong></td><td style="text-align:center"><span class="tick"></span></td><td></td></tr>
+  <tr><td><strong>Training &amp; growth</strong></td><td style="text-align:center"><span class="tick"></span></td><td></td></tr>
+  <tr><td><strong>Compensation</strong></td><td style="text-align:center"><span class="tick"></span></td><td></td></tr>
+</table>
+
+<h2><span class="num">5</span>Khatma</h2>
+<div class="q">
+  <div class="qtext">Koi aisi baat jo aap chahti hain main leadership tak pohanchaon?</div>
+  <div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div></div>
+</div>
+<div class="q">
+  <div class="qtext">Kuch aur jo main ne nahi poocha aur aap batana chahti hain?</div>
+  <div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div></div>
+</div>
+
+<div class="script">
+  <div class="hdr">Closing — ye keh kar khatam kijiye</div>
+  <p>"Sara, bohat shukriya — ye sab bohat kaam ki baatein hain. Main ye likh kar aage bhejunga.</p>
+  <p>Aap ne jo waqt aur mehnat yahan di, us ka idare ko faida hua hai. Allah aap ko aagay kamyab kare."</p>
+</div>
+
+<h2><span class="num">6</span>Do usool — ye bhoolna nahi</h2>
+<div class="warn box">
+  <div class="hdr">1. Defend mat kijiye</div>
+  <p>Jab woh kisi cheez ki shikayat kare, "nahi aisa nahi hai" ya "asal mein wajah ye thi" <strong>mat kahiye</strong>. Bas <strong>"aur batayein"</strong> kahiye. Jis lamhe aap defend karenge, us lamhe woh sach bolna band kar degi.</p>
+</div>
+<div class="warn box">
+  <div class="hdr">2. Khamoshi bhardijiye mat</div>
+  <p>Sawaal ke baad agar woh chup ho jaye, aap bhi chup rahiye. <strong>3–4 second</strong> ki khamoshi ke baad log wahi baat bolte hain jo pehle rok rahe thay. Is poori sheet ki sab se kaargar cheez yahi hai.</p>
+</div>
+
+<h2><span class="num">7</span>Interview ke baad — admin checklist</h2>
+<table>
+  <tr><th style="width:9%">Done</th><th>Item</th></tr>
+  <tr><td style="text-align:center"><span class="tick"></span></td><td>Handover kis ko ho raha hai — likhit hai?</td></tr>
+  <tr><td style="text-align:center"><span class="tick"></span></td><td>Team ke coaches kis RM ke under ja rahe hain — unhen bata diya gaya?</td></tr>
+  <tr><td style="text-align:center"><span class="tick"></span></td><td>Laptop, SIM, ID card, field equipment wapas</td></tr>
+  <tr><td style="text-align:center"><span class="tick"></span></td><td>Email aur system access band karne ki tareekh set</td></tr>
+  <tr><td style="text-align:center"><span class="tick"></span></td><td>Final settlement aur clearance ka process samjha diya</td></tr>
+  <tr><td style="text-align:center"><span class="tick"></span></td><td>Experience letter — kis ko kehna hai, bata diya</td></tr>
+</table>
+
+<div class="good box">
+  <div class="hdr">Interview ke foran baad</div>
+  <p>10 minute nikal kar apne notes mukammal kar lijiye — jo yaad hai magar likha nahi. Aik ghante baad aadhi baat zehen se nikal jati hai, khaas kar woh jumlay jo bilkul usi ke lafzon mein thay. Woh jumlay hi report mein sab se zyada wazan rakhte hain.</p>
+</div>
+
+</div>
+
+<p class="foot">
+  <strong>Document control.</strong> Exit interview working sheet — Sara Fatima (Regional Manager).
+  Confidential internal HR document. Bhare jane ke baad ye sheet HR record ka hissa hai; ise coaches ya
+  team members ke saath share na kijiye.
+</p>
+
+</body>
+</html>

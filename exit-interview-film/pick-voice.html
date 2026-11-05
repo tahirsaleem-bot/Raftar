@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>آواز چنیں</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --navy:#14304f; --gold:#c9922e; --line:#dfe5ec; --muted:#5b6b7d; }
+  body { margin:0; background:#f4f6f9; color:#16202c; font-family:"Noto Nastaliq Urdu", serif; }
+  header { background:var(--navy); color:#fff; border-bottom:5px solid var(--gold); padding:30px 0 26px; }
+  header .in, .wrap { max-width:860px; margin:0 auto; padding:0 24px; }
+  header h1 { margin:0; font-size:28px; font-weight:600; line-height:2; }
+  header p { margin:6px 0 0; font-size:16px; color:#cfe0f0; line-height:2.1; }
+  .wrap { padding-top:26px; padding-bottom:70px; }
+  .intro { background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px 24px;
+           font-size:17px; line-height:2.3; margin-bottom:24px; }
+  .row { background:#fff; border:1px solid var(--line); border-right:5px solid var(--gold);
+         border-radius:12px; padding:20px 24px; margin-bottom:16px; }
+  .top { display:flex; align-items:center; gap:14px; margin-bottom:10px; }
+  .name { font-family:"Source Sans 3",sans-serif; direction:ltr; font-weight:600; font-size:16px;
+          color:var(--navy); background:#eef3f8; padding:6px 13px; border-radius:8px; flex:none; }
+  audio { flex:1; min-width:0; height:36px; }
+  .note { font-size:15.5px; color:var(--muted); line-height:2.2; }
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>آواز چنیں</h1>
+  <p>ایک ہی جملہ، تین آوازوں میں</p>
+</div></header>
+<div class="wrap">
+  <div class="intro" style="background:#fdf5e4;border-color:#f0ddb0">
+    <b>پہلے یہ پڑھ لیں۔</b> جو تیسری آواز آپ نے پسند کی — Madhur — وہ اردو رسم الخط پڑھ ہی نہیں سکتی۔
+    اُس نمونے میں اُس نے صرف انگریزی الفاظ بولے تھے اور باقی سب چھوڑ دیا۔ اسی لیے وہ 3.65 سیکنڈ کا تھا
+    جبکہ وہی جملہ Asad 9.19 سیکنڈ میں بولتا ہے۔<br><br>
+    نیچے چوتھا نمونہ ہے: <b>وہی Madhur، مگر script دیوناگری میں لکھ کر</b> — اب وہ پورا پڑھتی ہے۔
+    سن کر بتائیں یہ چلے گی، یا دوسری والی (Salman) ٹھیک ہے۔
+  </div>
+  <div class="intro">
+    تینوں سن کر بتا دیں کون سی پسند ہے — میں پوری فلم اُسی میں بنا دوں گا۔<br>
+    یہ تینوں مشینی آوازیں ہیں، مفت، اور کسی اصل شخص کی نقل نہیں۔
+  </div>
+
+  <div class="row">
+    <div class="top"><span class="name">Asad — Pakistan</span>
+      <audio controls preload="none" src="voice-test/ur-PK-AsadNeural/audio.mp3"></audio></div>
+    <div class="note">یہی آواز ابھی فلم میں لگی ہوئی ہے۔ پاکستانی اردو، سیدھی اور صاف۔</div>
+  </div>
+
+  <div class="row">
+    <div class="top"><span class="name">Salman — India</span>
+      <audio controls preload="none" src="voice-test/ur-IN-SalmanNeural/audio.mp3"></audio></div>
+    <div class="note">اردو، مگر ہندوستانی لہجہ۔ کچھ لوگوں کو زیادہ نرم لگتی ہے۔</div>
+  </div>
+
+  <div class="row">
+    <div class="top"><span class="name">Madhur — Hindi</span>
+      <audio controls preload="none" src="voice-test/hi-IN-MadhurNeural/audio.mp3"></audio></div>
+    <div class="note">ہندی آواز، لہجہ بھاری اور باوقار۔ اردو کے الفاظ یہ بھی ٹھیک بولتی ہے —
+      فلمی انداز کے سب سے قریب یہی ہے۔</div>
+  </div>
+  <div class="row" style="border-right-color:#2e8b57">
+    <div class="top"><span class="name">Madhur — Devanagari script</span>
+      <audio controls preload="none" src="voice-test/madhur-devanagari/audio.mp3"></audio></div>
+    <div class="note">وہی بھاری آواز، مگر اب پورا جملہ پڑھتی ہے۔ بولی وہی رہتی ہے جو ٹیم بولتی ہے؛
+      صرف لکھائی کا رسم الخط بدلتا ہے، جو کسی کو نظر نہیں آتا۔</div>
+  </div>
+</div>
+</body>
+</html>

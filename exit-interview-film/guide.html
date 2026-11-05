@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Exit Interviews — How the process runs</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* Same house as the exit interview record itself: navy masthead, gold rule, both marks
+     on white chips. The document and the film should look like one thing.
+     No @page margin here - a CSS one overrides the print call's, and the running footer
+     lives in that bottom margin. Margins are set in make-guide.js. */
+  @page { size: A4; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Source Sans 3", "Segoe UI", sans-serif; font-size: 10.5pt;
+         line-height: 1.5; color: #1f2733; background: #fff; }
+  h1, h2, h3, .num, .fact .val { font-family: Lexend, "Segoe UI", sans-serif; }
+
+  .masthead { background: #14304f; color: #fff; padding: 22px 26px 18px; border-bottom: 5px solid #c9922e; }
+  .mast { display: table; width: 100%; }
+  .mast-l { display: table-cell; vertical-align: middle; }
+  .mast-r { display: table-cell; vertical-align: middle; text-align: right; width: 250px; white-space: nowrap; }
+  .chip { display: inline-block; background: #fff; border-radius: 7px; padding: 7px 11px; margin-left: 8px; vertical-align: middle; }
+  .chip img { height: 24px; width: auto; display: block; }
+  .chip.t img { height: 30px; }
+  .eyebrow { font-size: 7.5pt; letter-spacing: 2px; text-transform: uppercase; color: #9dc0e0; font-weight: 600; }
+  .masthead h1 { font-size: 20pt; font-weight: 500; margin: 5px 0 5px; letter-spacing: -0.3px; }
+  .masthead .sub { font-size: 9pt; color: #cfe0f0; }
+
+  .wrap { padding: 0 26px 10px; }
+
+  .lede { font-size: 11.5pt; line-height: 1.55; color: #26384a; margin: 16px 0 4px; }
+
+  .facts { display: table; width: 100%; border-spacing: 7px 0; margin: 14px 0 4px; }
+  .fact { display: table-cell; width: 25%; background: #f2f6fa; border-top: 3px solid #4a86b8;
+          padding: 8px 10px; text-align: center; }
+  .fact .lbl { font-size: 7pt; letter-spacing: 1px; text-transform: uppercase; color: #5b7896; font-weight: 600; }
+  .fact .val { font-size: 11pt; font-weight: 600; color: #14304f; margin-top: 2px; }
+
+  h2 { font-size: 12pt; font-weight: 600; color: #14304f; margin: 20px 0 8px;
+       padding-bottom: 5px; border-bottom: 2px solid #14304f; page-break-after: avoid; }
+  h2 .num { display: inline-block; width: 20px; height: 20px; line-height: 20px; text-align: center;
+            background: #14304f; color: #fff; border-radius: 3px; font-size: 9pt; margin-right: 8px;
+            vertical-align: 2px; }
+  h3 { font-size: 10.5pt; font-weight: 600; color: #14304f; margin: 12px 0 3px; page-break-after: avoid; }
+
+  p { margin: 0 0 7px; }
+  ol, ul { margin: 0 0 9px; padding-left: 19px; }
+  li { margin: 0 0 5px; }
+  li::marker { color: #4a86b8; }
+  strong { color: #0f2333; }
+
+  table { width: 100%; border-collapse: collapse; margin: 9px 0 12px; font-size: 9.5pt;
+          page-break-inside: avoid; }
+  th, td { border: 1px solid #ccd6e0; padding: 5px 9px; text-align: left; vertical-align: top; }
+  th { background: #14304f; color: #fff; font-weight: 600; font-size: 8.5pt;
+       letter-spacing: 0.4px; text-transform: uppercase; }
+  tbody tr:nth-child(even) td { background: #f6f9fc; }
+
+  .note { background: #f4f7fa; border-left: 4px solid #7e93a8; padding: 9px 13px; margin: 10px 0;
+          font-size: 9.5pt; color: #44586b; page-break-inside: avoid; }
+  .note b { color: #1f2733; }
+  .guard { background: #f3f8f4; border-left: 4px solid #2e8b57; padding: 9px 13px; margin: 10px 0;
+           font-size: 9.5pt; color: #335140; page-break-inside: avoid; }
+  .guard b { color: #1c6b43; }
+
+  .steps { counter-reset: s; list-style: none; padding: 0; }
+  .steps li { counter-increment: s; position: relative; padding-left: 34px; margin-bottom: 9px; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: 1px;
+    width: 23px; height: 23px; line-height: 23px; text-align: center; border-radius: 50%;
+    background: #14304f; color: #fff; font-family: Lexend, sans-serif; font-size: 9pt; font-weight: 500; }
+
+  .sign { margin-top: 22px; padding-top: 10px; border-top: 1px solid #ccd6e0;
+          font-size: 8.5pt; color: #5b6b7d; page-break-inside: avoid; }
+  .sign .who { font-family: Lexend, sans-serif; font-size: 10pt; font-weight: 600; color: #14304f; }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="mast">
+    <div class="mast-l">
+      <div class="eyebrow">People &amp; Culture &nbsp;·&nbsp; NIETE</div>
+      <h1>Exit Interviews — how the process runs</h1>
+      <div class="sub">A guide for the team &nbsp;·&nbsp; October 2026</div>
+    </div>
+    <div class="mast-r">
+      <span class="chip t"><img src="logo_taleemabad.png" alt=""></span>
+      <span class="chip"><img src="logo_niete.png" alt=""></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <p class="lede">When somebody resigns, the exit interview is now scheduled, recorded, written
+  up, filed and sent back on the original email thread without anyone having to start it.
+  Two steps still wait for a person: <strong>choosing the time</strong>, and
+  <strong>reading the record before it goes</strong>.</p>
+
+  <div class="facts">
+    <div class="fact"><div class="lbl">Mailbox checked</div><div class="val">Every 15 min</div></div>
+    <div class="fact"><div class="lbl">Human steps</div><div class="val">Two</div></div>
+    <div class="fact"><div class="lbl">On record</div><div class="val">4 interviews</div></div>
+    <div class="fact"><div class="lbl">Filed in</div><div class="val">Drive</div></div>
+  </div>
+
+  <h2><span class="num">1</span>From the resignation email to the filed record</h2>
+  <p>Nobody has to start this.</p>
+  <ol class="steps">
+    <li><strong>A resignation arrives.</strong> It does not have to say “resignation” in the
+        subject line. One written in the body counts, and so does a forwarded one where a
+        colleague adds a line on top asking for an exit interview to be arranged.</li>
+    <li><strong>You are emailed</strong> that a case is open and needs a time.</li>
+    <li><strong>You pick a slot.</strong> The calendar invite goes to the person leaving, to
+        whoever asked for the interview, to People &amp; Culture, and to the notetaker that
+        records the call.</li>
+    <li><strong>The notetaker’s summary is collected</strong> once the interview has happened.
+        No one forwards it on.</li>
+    <li><strong>The record is written</strong> in the same house style as the ones done by
+        hand, rendered as a PDF, and you are emailed that a draft is waiting.</li>
+    <li><strong>You read it and send.</strong> The PDF is filed in the Exit Interviews folder
+        in Drive and replied back onto the original email thread, with the record attached.</li>
+  </ol>
+  <p>From the resignation landing to the record being filed, the only time it waits on a
+  person is at steps 3 and 6.</p>
+
+  <h2><span class="num">2</span>The two decisions a person still makes</h2>
+  <p>These were left human deliberately, not because they were hard to automate.</p>
+
+  <h3>Choosing the time</h3>
+  <p>Somebody who has just resigned is not a calendar slot. The date is picked by hand, and
+  the person leaving, the colleague who flagged it, People &amp; Culture and the notetaker all
+  go on the same invite.</p>
+
+  <h3>Reading the record before it is sent</h3>
+  <p>An exit record carries what one person said about named colleagues, and sometimes a
+  harassment disclosure. It is read in full before it goes, and the wording can be corrected
+  first — from a phone, without opening a laptop.</p>
+  <p>What can be changed: the reasons, the sections, who was named and how, and the person’s
+  own quoted words. What cannot: the shape of the document — no section can be added, removed
+  or reordered, and no name swapped for another. Once a record has been sent it is locked.</p>
+
+  <h2><span class="num">3</span>Where the records are, and who can open them</h2>
+  <p>Every finished record is a PDF in the <strong>Exit Interviews</strong> folder in Drive, and
+  everyone on the reply is given read access as it is filed. Nobody has to ask for access.</p>
+  <p>The record also arrives as a reply on the original email thread, with the PDF attached, so
+  it reaches the people who were already part of that conversation without anyone being copied
+  in by hand afterwards.</p>
+
+  <table>
+    <tr><th style="width:22%">Date</th><th style="width:30%">Who</th><th>Role</th></tr>
+    <tr><td>22 October 2026</td><td>Waqas Panezai</td><td>Program Officer, Taleemabad Project</td></tr>
+    <tr><td>7 October 2026</td><td>Hamza Siddique</td><td>CPD Coach, Team Tarnol</td></tr>
+    <tr><td>21 September 2026</td><td>Sara Fatima</td><td>Regional Manager</td></tr>
+    <tr><td>25 August 2026</td><td>Naveera</td><td>Coach, Field and School Support</td></tr>
+  </table>
+  <p>The three before Waqas were done by hand, before any of this existed. They have been filed
+  into the same folder so the archive is in one place.</p>
+
+  <h2><span class="num">4</span>What protects the person who left</h2>
+
+  <div class="guard"><b>The record never goes to them.</b> It names their manager and sometimes
+  carries an allegation, so it is the one email that must not reach its own subject. Their
+  address is removed from every reply, and if it is put back by hand the send is refused
+  outright — before the record is filed anywhere. The check also catches a second address they
+  may have used on the thread.</div>
+
+  <div class="guard"><b>It never goes to a wide list either.</b> A resignation is sometimes sent
+  to a whole department. Replying to all of that would put a confidential record in front of
+  the organisation, so addresses like all@ or everyone@ are left off and named on the card, to
+  be added back only on purpose.</div>
+
+  <div class="guard"><b>They are told the call is recorded.</b> The invite says a notetaker
+  joins and records, that the notes become a record for People &amp; Culture, that the recording
+  itself is not circulated, and that they can say at the start if they would rather it was not
+  recorded.</div>
+
+  <div class="guard"><b>They are told what it is not tied to.</b> The invite says plainly that
+  nothing said is tied to their clearance, their final settlement or their references, and that
+  they do not have to answer anything.</div>
+
+  <div class="guard"><b>The record carries their words, not ours.</b> Where the notetaker
+  preserved what they actually said, the sentence is kept exactly — grammar untidied, Urdu
+  untranslated — and set apart in the document so a reader can see where our summary stops and
+  their account begins. Where no words of theirs survive, the space is left empty rather than
+  filled with a plausible quote.</div>
+
+  <div class="guard"><b>Sections that travel badly are marked.</b> A harassment disclosure or a
+  named allegation is flagged inside the document and in the covering email as restricted, so
+  the boundary survives the document being forwarded.</div>
+
+  <h2><span class="num">5</span>What it does not do</h2>
+
+  <h3>It does not read the recording</h3>
+  <p>It reads the notetaker’s written summary, which is already a paraphrase of the
+  conversation. The record is therefore only as good as those notes — which is why Rumi is the
+  notetaker on the invite: it keeps verbatim quotes, and Fathom’s recap does not.</p>
+
+  <h3>It does not judge</h3>
+  <p>The record reports what was said in neutral terms. It adds no severity rating, no overall
+  assessment and no recommendations of its own, and it never leaves out what the person said
+  worked. Those judgements belong to the people reading it.</p>
+
+  <h3>It cannot reissue a corrected record</h3>
+  <p>Once a record has been sent it cannot be amended through the app. A correction has to be
+  handled by hand for now.</p>
+
+  <h3>It says when it has broken</h3>
+  <p>If it stops working — an expired login, a service down — Tahir is emailed, and again when
+  it recovers. Silence means nothing arrived, not that something failed quietly.</p>
+
+  <div class="note"><b>If something looks wrong, say so.</b> In particular: if a case appears
+  for something that was never a resignation, if a record names someone incorrectly, or if you
+  were expecting a record and none arrived. Nothing is sent without being read first, so a
+  mistake caught at that point costs nothing.</div>
+
+  <div class="sign">
+    <div class="who">Tahir Saleem</div>
+    <div>People &amp; Culture &nbsp;·&nbsp; Taleemabad (NIETE)</div>
+    <div>A short film walking through the same process is available alongside this guide.</div>
+  </div>
+
+</div>
+</body>
+</html>

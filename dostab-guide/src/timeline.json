@@ -1,0 +1,57 @@
+{
+  "intro": {
+    "frames": 207,
+    "lead": 9,
+    "vo": 182
+  },
+  "signup": {
+    "frames": 127,
+    "lead": 9,
+    "vo": 101
+  },
+  "home": {
+    "frames": 112,
+    "lead": 9,
+    "vo": 87
+  },
+  "members": {
+    "frames": 112,
+    "lead": 9,
+    "vo": 86
+  },
+  "group_full": {
+    "frames": 113,
+    "lead": 9,
+    "vo": 87
+  },
+  "expense_split": {
+    "frames": 195,
+    "lead": 9,
+    "vo": 169
+  },
+  "balances": {
+    "frames": 144,
+    "lead": 9,
+    "vo": 119
+  },
+  "reminder": {
+    "frames": 127,
+    "lead": 9,
+    "vo": 102
+  },
+  "friends": {
+    "frames": 132,
+    "lead": 9,
+    "vo": 106
+  },
+  "friend_settle": {
+    "frames": 157,
+    "lead": 9,
+    "vo": 132
+  },
+  "outro": {
+    "frames": 134,
+    "lead": 9,
+    "vo": 108
+  }
+}

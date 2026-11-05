@@ -1,0 +1,64 @@
+{
+  "counters": {
+    "file": "counters.png",
+    "width": 864,
+    "height": 227,
+    "ring": null
+  },
+  "list": {
+    "file": "list.png",
+    "width": 900,
+    "height": 1500,
+    "ring": null
+  },
+  "schedule": {
+    "file": "schedule.png",
+    "width": 864,
+    "height": 629,
+    "ring": {
+      "x": 0.5017,
+      "y": 0.8108,
+      "w": 0.897,
+      "h": 0.0763
+    }
+  },
+  "review": {
+    "file": "review.png",
+    "width": 864,
+    "height": 645,
+    "ring": {
+      "x": 0.5017,
+      "y": 0.8155,
+      "w": 0.897,
+      "h": 0.0744
+    }
+  },
+  "edit": {
+    "file": "edit.png",
+    "width": 864,
+    "height": 645,
+    "ring": {
+      "x": 0.7237,
+      "y": 0.3297,
+      "w": 0.453,
+      "h": 0.0744
+    }
+  },
+  "recipients": {
+    "file": "recipients.png",
+    "width": 864,
+    "height": 645,
+    "ring": {
+      "x": 0.5017,
+      "y": 0.6454,
+      "w": 0.897,
+      "h": 0.1141
+    }
+  },
+  "register": {
+    "file": "register.png",
+    "width": 900,
+    "height": 470,
+    "ring": null
+  }
+}

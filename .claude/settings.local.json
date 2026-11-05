@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node scripts/markaz_pa_form.js)",
+      "Bash(node scripts/markaz_pa_options.js)",
+      "Bash(node scripts/markaz_inspect_result.js)",
+      "Bash(node scripts/markaz_test_manager_pick.js)",
+      "Read(//c/c/Raftar/ai-agent-starter/**)",
+      "Bash(grep -iA3 \"gemini\" src/config.js)"
+    ]
+  }
+}

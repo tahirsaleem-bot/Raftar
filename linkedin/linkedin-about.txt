@@ -1,0 +1,22 @@
+I make operations and HR work run smoothly, and lately I've been doing it with AI.
+
+I work in operations and people management in Pakistan's education sector. My days cover logistics, vendor billing, hiring and employee exits: the kind of work that keeps an organisation moving but quietly eats hours when it's done by hand.
+
+So I started automating it. I'm not a developer by training, but I've built and deployed AI agents that now handle real, daily work:
+
+→ A logistics agent that reads meter photos from WhatsApp, logs the kilometres in Google Sheets and calculates the month-end transport invoice using each day's fuel price. When it can't read a photo clearly, it says so instead of guessing.
+→ A live dashboard that gives management a daily, monthly and invoice view of the fleet.
+→ An exit interview agent that picks up the request, schedules the conversation, drafts a confidential record from the notes and files it once I approve.
+→ Tools for reference checks, offer letters and HR email that save time without losing the personal touch.
+
+What I bring:
+• Operations and logistics management
+• HR operations: hiring, onboarding, exit interviews, reference checks
+• Workflow design: turning messy routines into clear, repeatable steps
+• AI agents and automation (Claude Code, OCR, WhatsApp, Gmail, Google Sheets, Calendar, Drive)
+• Dashboards and reporting that people can trust
+• Cloud deployment with secure logins and access control
+
+I believe AI works best when it takes over the repetitive admin and leaves people the parts that need judgement: the conversations, the follow-ups and the decisions.
+
+I'm always glad to connect with teams that want to bring practical AI into their operations or HR work, whether for a role, a project or an exchange of ideas. Feel free to send me a message.

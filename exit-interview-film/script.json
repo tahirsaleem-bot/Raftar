@@ -1,0 +1,16 @@
+{
+  "voice": "hi-IN-MadhurNeural",
+  "note": "Written in Devanagari because Madhur — the deep voice Tahir chose — returns NO AUDIO at all for Urdu script; given the Urdu original it spoke only the Latin words and dropped the rest (3.65s against Asad's 9.19s for the same sentence). The spoken language is unchanged, it is the team's own code-switched Urdu; only the script the synthesiser is handed is different, and nobody ever sees it. English stays in Latin: product terms and anything that is a label on the screen.",
+  "lines": [
+    { "id": "s0", "text": "अस्सलामु अलैकुम। मैं हूँ रफ़्तार, ताहिर सलीम का agent। process यह है: resignation आती है, interview schedule होता है, record बनता है, और उसी email thread पर reply चला जाता है। आज हर step दिखाता हूँ।" },
+    { "id": "s1", "text": "resignation आती है। subject में हो, body में हो, या forward हो। तीनों count होते हैं।" },
+    { "id": "s2", "text": "पंद्रह मिनट में case ख़ुद open हो जाता है, और आपको email आ जाती है।" },
+    { "id": "s3", "text": "नाम और email पहले से filled हैं। time select करें, और Send invite press करें।" },
+    { "id": "s4", "text": "invite चार को जाती है। leaver, जिसने request की, People and Culture, और notetaker।" },
+    { "id": "s5", "text": "notes ख़ुद आ जाते हैं, और record ख़ुद write होता है। उसी के अपने अल्फ़ाज़ में।" },
+    { "id": "s6", "text": "कोई word ठीक करना हो तो Edit the wording press करें। phone से ही हो जाएगा।" },
+    { "id": "s7", "text": "record thread के सब लोगों को जाता है। सिवाय leaver के। वह कभी नहीं।" },
+    { "id": "s8", "text": "और Interviews on record में सब filed records, हर एक की PDF के साथ।" },
+    { "id": "s9", "text": "दो decisions आपके पास रहते हैं। meeting कब हो, और क्या send हो। बहुत शुक्रिया।" }
+  ]
+}

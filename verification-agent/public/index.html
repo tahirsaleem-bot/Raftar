@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f4e8c">
+<title>Verification Agent</title>
+<style>
+  :root { --brand:#1f4e8c; --bg:#f4f6f8; --card:#fff; --ink:#1f2328; --muted:#5a6470; --line:#e3e7eb;
+          --ok:#1a7f37; --warn:#9a6700; --bad:#cf222e; --chip:#eef2f7; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1419; --card:#182029; --ink:#e6edf3; --muted:#9aa5b1; --line:#2a3440; --chip:#22303d; --brand:#5b9bf0; } }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.5 -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:var(--bg); color:var(--ink); }
+  header { position:sticky; top:0; z-index:5; background:var(--brand); color:#fff; padding:12px 16px; display:flex; align-items:center; gap:10px; }
+  header h1 { font-size:17px; margin:0; flex:1; }
+  header button { background:rgba(255,255,255,.18); color:#fff; border:0; border-radius:8px; padding:6px 10px; font-size:14px; }
+  main { max-width:760px; margin:0 auto; padding:14px 16px 80px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px; }
+  .row { display:flex; gap:8px; align-items:center; }
+  input, textarea { width:100%; font:inherit; color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:9px; padding:10px 12px; }
+  button.p { background:var(--brand); color:#fff; border:0; border-radius:9px; padding:10px 14px; font:inherit; font-weight:600; white-space:nowrap; }
+  button.s { background:var(--chip); color:var(--ink); border:0; border-radius:9px; padding:8px 12px; font:inherit; }
+  button:disabled { opacity:.5; }
+  .muted { color:var(--muted); font-size:13px; }
+  .chip { display:inline-block; font-size:12px; padding:2px 9px; border-radius:20px; background:var(--chip); color:var(--muted); font-weight:600; }
+  .chip.ok { background:#dafbe1; color:var(--ok); } .chip.warn { background:#fff8c5; color:var(--warn); } .chip.bad { background:#ffebe9; color:var(--bad); } .chip.act { background:var(--brand); color:#fff; }
+  @media (prefers-color-scheme: dark) { .chip.ok{background:#12361f} .chip.warn{background:#3a2e05} .chip.bad{background:#3d1214} }
+  .list .card { cursor:pointer; }
+  h2 { font-size:18px; margin:0 0 4px; } h3 { font-size:15px; margin:0 0 6px; }
+  .flags li { color:var(--bad); } .flags { margin:6px 0; padding-left:18px; font-size:14px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; } td, th { text-align:left; padding:6px 4px; border-bottom:1px solid var(--line); vertical-align:top; }
+  iframe { width:100%; height:430px; border:1px solid var(--line); border-radius:9px; background:#fff; }
+  details summary { cursor:pointer; color:var(--brand); font-weight:600; margin:6px 0; }
+  .banner { background:#fff8c5; color:#4d3800; border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:14px; }
+  .err { color:var(--bad); font-size:13px; }
+  .toast { position:fixed; left:16px; right:16px; bottom:16px; background:#1f2328; color:#fff; padding:12px 14px; border-radius:10px; display:none; z-index:9; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; } @media (max-width:420px){ .grid2 { grid-template-columns:1fr; } }
+  a { color:var(--brand); word-break:break-all; }
+</style>
+</head>
+<body>
+<header><h1 id="title">Verification Agent</h1><button id="back" style="display:none">‹ Back</button><button id="reload">↻</button></header>
+<main id="app"></main>
+<div class="toast" id="toast"></div>
+<script>
+const $ = s => document.querySelector(s);
+const app = $('#app');
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+const toast = (m, ms = 3500) => { const t = $('#toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', ms); };
+async function api(p, opt = {}) {
+  const r = await fetch('/api' + p, { ...opt, headers: { 'Content-Type': 'application/json' }, body: opt.body ? JSON.stringify(opt.body) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 401 && j.error === 'login') { showLogin(); throw new Error('login'); }
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+const STATUS = { draft:['Ready to send','act'], checking:['Checking…',''], error:['Check failed','bad'], sent:['Sent — waiting',''], reminded:['Reminder sent',''],
+  replied:['Replied — read it','warn'], confirmed:['Confirmed ✓','ok'], partially_confirmed:['Partly confirmed','warn'], not_confirmed:['NOT confirmed','bad'],
+  needs_more_info:['They need more info','warn'], bounced:['Email bounced','bad'], skipped:['Skipped',''] };
+const chip = s => { const [t, c] = STATUS[s] || [s, '']; return `<span class="chip ${c}">${esc(t)}</span>`; };
+const fmt = iso => iso ? new Date(iso).toLocaleString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+
+let current = null, timer = null;
+function setHeader(t, back) { $('#title').textContent = t; $('#back').style.display = back ? '' : 'none'; }
+$('#back').onclick = () => { location.hash = ''; };
+$('#reload').onclick = () => route(true);
+window.onhashchange = () => route();
+
+function showLogin() {
+  setHeader('Verification Agent');
+  app.innerHTML = `<div class="card"><h2>Enter PIN</h2><p class="muted">Tahir Saleem · People & Culture</p>
+    <form id="lf" class="row"><input id="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="PIN"><button class="p">Open</button></form><p class="err" id="le"></p></div>`;
+  $('#lf').onsubmit = async e => { e.preventDefault();
+    try { await api('/login', { method:'POST', body:{ pin: $('#pin').value } }); route(); } catch (x) { if (x.message !== 'login') $('#le').textContent = x.message; } };
+}
+
+async function route(force) {
+  clearInterval(timer);
+  const id = location.hash.replace('#', '');
+  try { id ? await showCase(id) : await showHome(); } catch (e) { if (e.message !== 'login') app.innerHTML = `<div class="card err">${esc(e.message)}</div>`; }
+}
+
+async function showHome() {
+  setHeader('Verification Agent');
+  const [status, cases] = await Promise.all([api('/status'), api('/cases')]);
+  const banners = [];
+  if (!status.aiReady) banners.push('Claude API key is not set yet — CVs and replies cannot be read automatically. Add ANTHROPIC_API_KEY in Railway.');
+  if (status.gmail !== true) banners.push('Gmail problem: ' + status.gmail);
+  app.innerHTML = `${banners.map(b => `<div class="banner">${esc(b)}</div>`).join('')}
+  <div class="card"><h3>New verification</h3>
+    <form id="sf" class="row"><input id="q" placeholder="Employee name, e.g. Hina Jafri" autocomplete="off"><button class="p">Search</button></form>
+    <div id="results"></div><p class="muted" style="margin:8px 0 0">Searches Markaz Talent Acquisition, takes the CV from there, and asks the employee for contacts.</p></div>
+  <div class="list">${cases.map(c => `<div class="card" data-id="${c.id}">
+      <div class="row"><div style="flex:1"><strong>${esc(c.name)}</strong><div class="muted">${esc(c.position || '')}</div></div>
+      ${c.summary.action ? '<span class="chip act">Action</span>' : ''}</div>
+      <div class="row" style="margin-top:6px;justify-content:space-between"><span class="muted">${esc(c.summary.stage)}${c.busy ? ' · working…' : ''}</span>
+      <span class="muted">${c.summary.total ? `${c.summary.confirmed}/${c.summary.total} confirmed` : ''}</span></div>
+      ${c.error ? `<div class="err">${esc(c.error)}</div>` : ''}</div>`).join('') || '<p class="muted">No cases yet.</p>'}</div>
+  <p class="muted">Last check: ${fmt(status.lastPoll) || '—'} · checks Gmail every 15 min · reminders after ${status.reminderDays} days · CC ${esc(status.cc)}</p>`;
+  document.querySelectorAll('.list .card').forEach(el => el.onclick = () => location.hash = el.dataset.id);
+  $('#sf').onsubmit = async e => { e.preventDefault();
+    const q = $('#q').value.trim(); if (!q) return;
+    $('#results').innerHTML = '<p class="muted">Searching Markaz…</p>';
+    try {
+      const hits = await api('/search?q=' + encodeURIComponent(q));
+      $('#results').innerHTML = hits.length ? hits.map((h, i) => `<div class="card" style="margin:10px 0 0">
+        <strong>${esc(h.name)}</strong> <span class="chip">${esc(h.status)}</span>
+        <div class="muted">${esc(h.position || '')} · ${esc(h.location || '')}</div>
+        <div class="muted">Official email: ${esc(h.officialEmail || 'not found')} · CV: ${h.hasResume ? 'yes' : 'no'}</div>
+        <button class="p" style="margin-top:8px" data-i="${i}">Start verification</button></div>`).join('') : '<p class="muted">No match in Markaz. Check the spelling.</p>';
+      $('#results').querySelectorAll('button').forEach(b => b.onclick = async () => {
+        b.disabled = true; const c = await api('/cases', { method:'POST', body: hits[b.dataset.i] }); location.hash = c.id; });
+    } catch (x) { $('#results').innerHTML = `<p class="err">${esc(x.message)}</p>`; }
+  };
+}
+
+function frame(html) { return `<iframe sandbox srcdoc="${esc(html)}"></iframe>`; }
+
+async function showCase(id) {
+  clearInterval(timer);
+  const c = await api('/cases/' + id);
+  current = c;
+  setHeader(c.name, true);
+  const cv = c.cv;
+  const s = c.summary;
+  let h = `<div class="card"><h2>${esc(c.name)}</h2><div class="muted">${esc(c.markaz?.position || '')}${c.markaz ? ' · Markaz: ' + esc(c.markaz.status) : ''}</div>
+    <p style="margin:8px 0 0"><span class="chip ${s.action ? 'act' : ''}">${esc(s.stage)}</span> ${c.busy ? '<span class="muted">working…</span>' : ''}</p>
+    ${c.error ? `<p class="err">${esc(c.error)}</p>` : ''}
+    <div class="row" style="margin-top:10px"><input id="emp" value="${esc(c.employeeEmail || '')}" placeholder="Employee official email"><button class="s" id="saveEmp">Save</button></div>
+    <div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="s" id="refresh">Check now</button>
+      <label class="s" style="display:inline-block;background:var(--chip);border-radius:9px;padding:8px 12px">Upload CV<input type="file" id="cvf" accept="application/pdf,image/*" hidden></label>
+      <button class="s" id="arch">${c.archived ? 'Unarchive' : 'Archive'}</button></div></div>`;
+
+  if (cv) h += `<div class="card"><h3>CV — experience</h3><table><tr><th>Organization</th><th>Designation</th><th>Period</th></tr>
+    ${cv.experience.map(e => `<tr><td>${esc(e.organization)}${e.kind !== 'job' ? ` <span class="muted">(${esc(e.kind)})</span>` : ''}</td><td>${esc(e.designation)}</td><td>${esc(e.start || '?')} – ${esc(e.end || '?')}</td></tr>`).join('')}</table>
+    ${cv.consistency_notes.length ? `<ul class="flags">${cv.consistency_notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}</div>`;
+
+  const k = c.contact;
+  if (k.status === 'draft') h += `<div class="card"><h3>Step 1 · Ask ${esc(c.firstName)} for contacts</h3>
+    <p class="muted">To: ${esc(c.employeeEmail || '— add email above —')} · CC hiring@</p><details><summary>Preview email</summary>${frame(k.html)}</details>
+    <button class="p" id="sendContact" ${c.employeeEmail ? '' : 'disabled'}>Send to ${esc(c.firstName)}</button></div>`;
+  else if (k.status === 'sent' || k.status === 'replied') h += `<div class="card"><h3>Step 1 · Contact details</h3>
+    <p class="muted">Requested ${fmt(k.sentAt)}${k.reminderAt ? ' · reminder ' + fmt(k.reminderAt) : ''} · ${k.status === 'replied' ? 'employee replied' : 'waiting for reply'}</p>
+    ${c.contactsSummary ? `<p>${esc(c.contactsSummary)}</p>` : ''}
+    ${c.cvWithoutContact?.length ? `<p class="err">No contact given for: ${c.cvWithoutContact.map(esc).join(', ')}</p>` : ''}</div>`;
+
+  for (const o of c.orgs) {
+    const ck = o.check;
+    h += `<div class="card" id="o-${o.key}"><div class="row"><h3 style="flex:1">${esc(o.organization)}</h3>${chip(o.status)}</div>
+      <div class="muted">${esc(o.designation || '?')} · ${esc(o.start || '?')} – ${esc(o.end || '?')}</div>
+      ${o.contact_name || o.contact_email ? `<div class="muted">Contact given: ${esc([o.contact_name, o.contact_title, o.contact_email, o.contact_phone].filter(Boolean).join(', '))}</div>` : ''}
+      ${o.notes ? `<p style="margin:6px 0">${esc(o.notes)}</p>` : ''}
+      ${o.documents?.length ? `<div class="muted">Documents: ${o.documents.map(esc).join(' · ')}</div>` : ''}
+      ${ck ? `<details ${o.status === 'draft' ? 'open' : ''}><summary>Google check · risk ${esc(ck.risk)} · ${ck.org_exists === 'yes' ? 'organization found' : ck.org_exists === 'no' ? 'organization NOT found' : 'unclear'}</summary>
+        <p style="margin:4px 0">${esc(ck.what_it_is)}</p><p class="muted" style="margin:4px 0">${esc(ck.contact_assessment)}</p>
+        ${ck.red_flags.length ? `<ul class="flags">${ck.red_flags.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : '<p class="chip ok">No red flags</p>'}
+        <p class="muted">Official: ${esc([ck.official_website, ck.official_email, ck.official_phone].filter(Boolean).join(' · ') || 'none found')}</p>
+        <p class="muted">Suggested recipient: ${esc(ck.recommended_reason)}</p>
+        ${ck.sources?.length ? `<p class="muted">${ck.sources.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u.replace(/^https?:\/\//, '').slice(0, 60))}</a>`).join('<br>')}</p>` : ''}</details>` : ''}
+      ${o.error ? `<p class="err">${esc(o.error)}</p>` : ''}`;
+    if (o.status === 'draft' || o.status === 'error') {
+      h += `<div class="grid2" style="margin-top:8px"><input id="to-${o.key}" value="${esc(o.to || '')}" placeholder="Recipient email"><input id="tn-${o.key}" value="${esc(o.toName || '')}" placeholder="Recipient name (optional)"></div>
+        ${o.html ? `<details><summary>Preview email</summary>${frame(o.html)}</details>` : ''}
+        <div class="row" style="margin-top:8px"><button class="p" data-send="${o.key}">Send verification</button><button class="s" data-prev="${o.key}">Update preview</button><button class="s" data-skip="${o.key}">Skip</button></div>`;
+    } else {
+      h += `<p class="muted" style="margin:8px 0 0">${o.to ? 'To ' + esc(o.toName ? o.toName + ' <' + o.to + '>' : o.to) : ''}${o.sentAt ? ' · sent ' + fmt(o.sentAt) : ''}${o.reminderAt ? ' · reminder ' + fmt(o.reminderAt) : ''}</p>`;
+      if (o.reply) h += `<div style="margin-top:8px;padding:10px;background:var(--chip);border-radius:9px"><strong>Reply</strong> ${o.reply.at ? '<span class="muted">' + fmt(o.reply.at) + '</span>' : ''}
+        ${o.reply.summary ? `<p style="margin:4px 0">${esc(o.reply.summary)}</p>` : ''}
+        ${o.reply.differences?.length ? `<ul class="flags">${o.reply.differences.map(d => `<li>${esc(d)}</li>`).join('')}</ul>` : ''}
+        ${o.reply.text ? `<details><summary>Full reply</summary><pre style="white-space:pre-wrap;font:13px/1.5 inherit">${esc(o.reply.text)}</pre></details>` : ''}</div>`;
+      if (o.status === 'skipped') h += `<button class="s" data-skip="${o.key}">Restore</button>`;
+    }
+    h += `</div>`;
+  }
+  h += `<details class="card"><summary>Activity log</summary>${(c.log || []).slice().reverse().map(l => `<div class="muted">${fmt(l.at)} — ${esc(l.msg)}</div>`).join('')}</details>`;
+  app.innerHTML = h;
+
+  const act = async (fn, msg) => { try { document.querySelectorAll('button').forEach(b => b.disabled = true); await fn(); if (msg) toast(msg); } catch (x) { toast('Error: ' + x.message, 6000); } await showCase(id); };
+  $('#saveEmp').onclick = () => act(() => api(`/cases/${id}`, { method:'PATCH', body:{ employeeEmail: $('#emp').value } }), 'Saved');
+  $('#refresh').onclick = () => act(() => api(`/cases/${id}/refresh`, { method:'POST' }), 'Checked');
+  $('#arch').onclick = () => act(() => api(`/cases/${id}`, { method:'PATCH', body:{ archived: !c.archived } }));
+  $('#cvf').onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader();
+    r.onload = () => act(() => api(`/cases/${id}/cv`, { method:'POST', body:{ mime: f.type, data: String(r.result).split(',')[1] } }), 'CV uploaded — reading it'); r.readAsDataURL(f); };
+  if ($('#sendContact')) $('#sendContact').onclick = () => confirm(`Send the contact-details request to ${c.employeeEmail}?`) &&
+    act(() => api(`/cases/${id}/contact/send`, { method:'POST', body:{ to: $('#emp').value } }), 'Sent');
+  document.querySelectorAll('[data-send]').forEach(b => b.onclick = () => { const key = b.dataset.send; const to = $('#to-' + key).value.trim();
+    if (!to) return toast('Add a recipient email first');
+    confirm(`Send the verification email to ${to}? (CC hiring@)`) && act(() => api(`/cases/${id}/orgs/${key}/send`, { method:'POST', body:{ to, toName: $('#tn-' + key).value.trim() } }), 'Sent'); });
+  document.querySelectorAll('[data-prev]').forEach(b => b.onclick = () => { const key = b.dataset.prev;
+    act(() => api(`/cases/${id}/orgs/${key}/preview`, { method:'POST', body:{ to: $('#to-' + key).value.trim(), toName: $('#tn-' + key).value.trim() } }), 'Preview updated'); });
+  document.querySelectorAll('[data-skip]').forEach(b => b.onclick = () => act(() => api(`/cases/${id}/orgs/${b.dataset.skip}/skip`, { method:'POST' })));
+  if (c.busy || c.orgs.some(o => o.status === 'checking')) timer = setInterval(() => { if (location.hash === '#' + id && !document.querySelector('details[open] iframe')) showCase(id); }, 8000);
+}
+
+route();
+</script>
+</body>
+</html>

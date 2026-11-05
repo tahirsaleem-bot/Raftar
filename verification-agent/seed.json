@@ -1,0 +1,41 @@
+[
+  {
+    "name": "Zia ul Hasnain", "firstName": "Zia", "employeeEmail": "zia.hasnain@niete.edu.pk",
+    "contact": { "status": "replied", "threadId": "1a1102a26d6b3260", "msgId": "1a1102a26d6b3260", "sentAt": "2026-10-06T07:42:40Z", "analysedIds": ["1a11c696a0ce93da"] },
+    "orgs": [
+      { "key": "teachforpakistan", "organization": "Teach for Pakistan", "designation": "Leadership and Teaching Fellow", "start": "July 2024", "end": "June 2026",
+        "to": "hr@iteachforpakistan.org", "status": "partially_confirmed",
+        "reply": { "verdict": "partially_confirmed", "summary": "TFP HR (9 Oct, in the Hafiza Iqra thread): worked with us from July 2024 to May 2026.", "differences": ["TFP says May 2026; CV says June 2026"] },
+        "notes": "Confirmed by TFP HR on 9 Oct 2026 in another thread; one-month gap (May vs June 2026) still to discuss with Zia." },
+      { "key": "citiesforchildren", "organization": "Cities for Children", "designation": "Communications & Research Intern", "start": "July 2025", "end": "August 2025",
+        "to": "madeeha@citiesforchildren.co", "toName": "Madeeha Ansari", "contactFromCandidate": true, "status": "sent", "msgId": "1a12fb0366d863c4", "sentAt": "2026-10-12T06:00:00Z" },
+      { "key": "maaneducationandhealthdevelopmentorganizationmehd", "organization": "Maan Education and Health Development Organization (MEHD)", "designation": "Media and Communications Officer", "start": "August 2023", "end": "December 2023",
+        "to": "faisalmalik@mehdfoundation.org", "toName": "Malik Muhammad Faisal", "contactFromCandidate": true, "status": "sent", "msgId": "1a12fb0399941cdb", "sentAt": "2026-10-12T06:00:00Z" },
+      { "key": "sunonews", "organization": "SUNO News", "designation": "News Reporter (Election Cell)", "start": "January 2024", "end": "June 2024",
+        "to": "kamran.khan@sunotv.com", "toName": "Muhammad Kamran Khan", "contactFromCandidate": true, "status": "sent", "msgId": "1a12fb03d2c79970", "sentAt": "2026-10-12T06:00:00Z" },
+      { "key": "zabfm1066", "organization": "ZAB FM 106.6", "designation": "Radio Host (RJ)", "start": "June 2022", "end": "August 2022",
+        "to": "hod.media@szabist-isb.edu.pk", "toName": "Dr. Wajid Zulqarnain", "contactFromCandidate": true, "status": "sent", "msgId": "1a12fb03f98801c4", "sentAt": "2026-10-12T06:00:00Z" }
+    ]
+  },
+  {
+    "name": "Noor ul Ain Rana", "firstName": "Noor", "employeeEmail": "noor@niete.edu.pk",
+    "contact": { "status": "replied", "threadId": "1a1102a2b9a6aae8", "msgId": "1a1102a2b9a6aae8", "sentAt": "2026-10-06T07:42:41Z", "analysedIds": ["1a11f7c49136dad1"] },
+    "orgs": [
+      { "key": "teachforpakistan", "organization": "Teach For Pakistan", "designation": "Fellow", "start": "July 2023", "end": "June 2025",
+        "to": "hr@iteachforpakistan.org", "toName": "Wajeeha Abbasi", "contactFromCandidate": false, "status": "sent", "msgId": "1a12fb611f568804", "sentAt": "2026-10-12T06:00:00Z" }
+    ]
+  },
+  {
+    "name": "Naima Javed", "firstName": "Naima", "employeeEmail": "naima.javed@niete.edu.pk",
+    "contact": { "status": "replied", "threadId": "1a1102a2243619aa", "msgId": "1a1102a2243619aa", "sentAt": "2026-10-06T07:42:39Z", "analysedIds": [] },
+    "orgs": []
+  },
+  {
+    "name": "Hina Fatima Jafri", "firstName": "Hina", "employeeEmail": "hina.jafri@niete.edu.pk",
+    "contact": { "status": "replied", "threadId": "1a1102a2040c73c9", "msgId": "1a1102a2040c73c9", "sentAt": "2026-10-06T07:42:38Z", "analysedIds": ["1a11a1d61ad54e43"] },
+    "orgs": [
+      { "key": "radiantsecondary", "organization": "Radiant Secondary School", "designation": "Teacher", "start": "2012", "end": "2018",
+        "to": "radsscl@gmail.com", "toName": "Ch. Mukhtar Ahmed Warraich", "contactFromCandidate": true, "status": "sent", "msgId": "1a139134ce67b7d5", "sentAt": "2026-10-14T06:00:00Z" }
+    ]
+  }
+]

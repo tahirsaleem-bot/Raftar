@@ -1,0 +1,17 @@
+{
+  "voice": "hi-IN-MadhurNeural",
+  "note": "Spoken language is Roman-Urdu style code-switched Urdu. Written in Devanagari only because Madhur cannot read Urdu script (see exit-interview-film). Screen labels stay in Latin so they are said exactly as they appear.",
+  "lines": [
+    { "id": "intro", "text": "अस्सलाम ओ अलैकुम दोस्तो! यह है Dostab. Trips का हिसाब, बिल्कुल exact." },
+    { "id": "signup", "text": "पहले नाम, email और password से account बनाएँ।" },
+    { "id": "home", "text": "New group दबाएँ, और trip का नाम लिखें।" },
+    { "id": "members", "text": "Members में, दोस्तों का email add करें।" },
+    { "id": "group_full", "text": "जिसने bill दिया, वह Add expense दबाए।" },
+    { "id": "expense_split", "text": "Bill लिखें, साथ वालों पर tick लगाएँ। हर एक का हिस्सा ख़ुद निकल आता है।" },
+    { "id": "balances", "text": "Balances में दिखता है, किसने किसको कितने देने हैं।" },
+    { "id": "reminder", "text": "Bell दबाएँ, और WhatsApp पर reminder भेज दें।" },
+    { "id": "friends", "text": "Friends में हर दोस्त का total है, सारे trips मिला कर।" },
+    { "id": "friend_settle", "text": "पैसे दे दिए? Mark everything as paid, और सब clear।" },
+    { "id": "outro", "text": "आज ही अपना पहला group बनाएँ। शुक्रिया!" }
+  ]
+}

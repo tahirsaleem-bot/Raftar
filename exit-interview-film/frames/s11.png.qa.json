@@ -1,0 +1,13 @@
+{
+  "image": "frames/s11.png",
+  "width": 1920,
+  "height": 1080,
+  "bytes": 1497083,
+  "reviewed_at": "2026-10-27T09:55:36.787Z",
+  "no_layout_bugs": true,
+  "content_is_real": true,
+  "no_pii": true,
+  "matches_narration": true,
+  "read_tool_verified": true,
+  "note": "Neural voice restored, cue times now proportional to scene length, closing card rebuilt with full-size marks and a thank you."
+}

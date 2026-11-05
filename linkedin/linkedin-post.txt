@@ -1,0 +1,17 @@
+Every morning used to start with me zooming into a blurry photo of a meter, trying to work out whether the last digit was a 3 or an 8.
+
+Not anymore.
+
+I'm an operations person, not a developer. Over the past few months I built AI agents that now handle two of the most manual parts of my job:
+
+→ Logistics: an agent reads meter photos straight from WhatsApp, logs the kilometres in our sheet, and works out the month-end invoice using each day's fuel price. Tested on 160 real photos, it got none wrong, because when it isn't sure, it doesn't guess.
+
+→ Exit interviews: an agent picks up the request, schedules the conversation, drafts the record from the notes, and files it once I've approved it.
+
+I still hold every conversation and check every number. What's gone is the admin.
+
+In the article I share what the work looked like before and after, the mistakes I made along the way, and the skills it has taught me.
+
+If your team wants to bring practical AI into operations or HR, I'd love to connect.
+
+#AIAutomation #Operations #HROperations #ClaudeCode #OpenToWork

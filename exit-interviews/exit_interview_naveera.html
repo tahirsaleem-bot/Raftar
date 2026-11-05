@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Exit Interview Record — Naveera</title>
+<style>
+  @page { size: A4; margin: 13mm 12mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Calibri, "Helvetica Neue", Arial, sans-serif;
+    font-size: 10pt; line-height: 1.42; color: #1f2733;
+    max-width: 860px; margin: 0 auto; padding: 0 0 30px; background: #fff;
+  }
+
+  .masthead { background: #14304f; color: #fff; padding: 20px 26px 17px; border-bottom: 5px solid #c9922e; }
+  .masthead .eyebrow { font-size: 8pt; letter-spacing: 2px; text-transform: uppercase; color: #9dc0e0; margin: 0 0 5px; font-weight: 600; }
+  .masthead h1 { font-size: 21pt; margin: 0 0 6px; font-weight: 600; letter-spacing: -0.4px; }
+  .masthead .meta { font-size: 9pt; color: #cfe0f0; margin: 0; }
+  .masthead .meta b { color: #fff; font-weight: 600; }
+  .conf { display: inline-block; margin-top: 10px; font-size: 7.5pt; font-weight: 700; letter-spacing: 1.2px;
+          text-transform: uppercase; background: #8f2f2f; color: #ffe9e9; padding: 3px 10px; border-radius: 3px; }
+
+  .wrap { padding: 0 26px; }
+
+  h2 { font-size: 12pt; margin: 20px 0 9px; padding: 0 0 6px; border-bottom: 2px solid #14304f;
+       color: #14304f; font-weight: 600; }
+  h2 .num { display: inline-block; width: 21px; height: 21px; line-height: 21px; text-align: center;
+            background: #14304f; color: #fff; border-radius: 3px; font-size: 9.5pt; margin-right: 8px; vertical-align: 2px; }
+  h3 { font-size: 10.5pt; margin: 14px 0 6px; color: #1a4a72; font-weight: 600;
+       padding-left: 9px; border-left: 4px solid #4a86b8; }
+  p, li { margin: 0 0 5px; }
+  ul { margin: 0 0 8px; padding-left: 19px; }
+  li::marker { color: #4a86b8; }
+  strong { color: #0f2333; }
+
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 9.5pt; }
+  th, td { border: 1px solid #ccd6e0; padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: #14304f; color: #fff; font-weight: 600; font-size: 8.5pt; letter-spacing: 0.4px; text-transform: uppercase; }
+  tbody tr:nth-child(even) td { background: #f6f9fc; }
+  td.k { width: 27%; background: #eaf1f8 !important; font-weight: 600; color: #14304f; }
+
+  .facts { display: table; width: 100%; border-spacing: 7px 0; margin: 13px 0 3px; }
+  .facts .cell { display: table-cell; width: 25%; background: #f2f6fa; border-top: 3px solid #4a86b8; padding: 8px 10px; text-align: center; }
+  .facts .lbl { font-size: 7pt; letter-spacing: 1px; text-transform: uppercase; color: #5b7896; font-weight: 600; }
+  .facts .val { font-size: 11pt; font-weight: 600; color: #14304f; margin-top: 2px; }
+
+  .box { padding: 9px 13px; margin: 9px 0; border-left: 5px solid; border-radius: 0 3px 3px 0; }
+  .box .hdr { font-size: 8pt; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+  .box p:last-child { margin-bottom: 0; }
+  .good { background: #eef9f1; border-color: #2e8b57; } .good .hdr { color: #1e6b40; }
+  .warn { background: #fdf6e6; border-color: #c9922e; } .warn .hdr { color: #8a6314; }
+  .crit { background: #fbeeee; border-color: #a83232; } .crit .hdr { color: #8a2020; }
+
+  .badge { display: inline-block; font-size: 7pt; font-weight: 700; letter-spacing: 0.7px;
+           text-transform: uppercase; padding: 2px 7px; border-radius: 3px; white-space: nowrap; }
+  .b-high { background: #a83232; color: #fff; }
+  .b-med  { background: #c9922e; color: #fff; }
+  .b-ok   { background: #2e8b57; color: #fff; }
+
+  .quote { background: #f5f8fb; border-left: 4px solid #7fa6c8; padding: 8px 13px; margin: 7px 0;
+           font-size: 9pt; color: #2c3a4a; font-style: italic; }
+  .quote .who { display: block; font-style: normal; font-weight: 700; font-size: 8pt; letter-spacing: 0.5px;
+                color: #1a4a72; margin-bottom: 2px; text-transform: uppercase; }
+  .en { display: block; font-style: normal; color: #5b6b7d; font-size: 8.5pt; margin-top: 3px; }
+
+  .sign { margin: 24px 0 0; font-size: 9pt; color: #475569; }
+  .sign span { border-top: 1px solid #94a3b8; padding-top: 4px; display: inline-block; min-width: 240px; }
+
+  .foot { margin: 20px 26px 0; padding: 10px 0 0; border-top: 2px solid #14304f; font-size: 8pt; color: #64748b; }
+
+  @media print {
+    body { padding: 0; }
+    .masthead { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    h2, h3 { page-break-after: avoid; }
+    table, .box, .quote, .facts { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <p class="eyebrow">Human Resources &nbsp;·&nbsp; Separation Documentation</p>
+  <h1>Exit Interview Record</h1>
+  <p class="meta"><b>Naveera</b> &nbsp;·&nbsp; Coach, Field &amp; School Support &nbsp;·&nbsp; Interviewed by <b>Tahir Saleem</b> &nbsp;·&nbsp; 25 August 2026</p>
+  <span class="conf">Confidential — Internal Use Only</span>
+</div>
+
+<div class="wrap">
+
+<div class="facts">
+  <div class="cell"><div class="lbl">Tenure</div><div class="val">2.5 Years</div></div>
+  <div class="cell"><div class="lbl">Last Working Day</div><div class="val">31st (Mon)</div></div>
+  <div class="cell"><div class="lbl">Separation Type</div><div class="val">Voluntary</div></div>
+  <div class="cell"><div class="lbl">Terms</div><div class="val">Amicable</div></div>
+</div>
+
+<h2><span class="num">1</span>Employee Details</h2>
+<table>
+  <tr><td class="k">Employee Name</td><td>Naveera</td></tr>
+  <tr><td class="k">Designation</td><td>Coach — Field &amp; School Support</td></tr>
+  <tr><td class="k">Length of Service</td><td>Approximately 2.5 years</td></tr>
+  <tr><td class="k">Last Working Day</td><td>31st (Monday)</td></tr>
+  <tr><td class="k">Interview Date &amp; Mode</td><td>25 August 2026 — in-person exit conversation</td></tr>
+  <tr><td class="k">Type of Separation</td><td>Voluntary resignation, on amicable terms</td></tr>
+  <tr><td class="k">Rehire Recommendation</td><td>Yes — no performance or conduct concerns on either side</td></tr>
+</table>
+
+<h2><span class="num">2</span>Reasons for Leaving</h2>
+<p>Three separate drivers, recorded in the order of importance she gave them — the decision to leave
+pre-dated the opportunity that made it possible.</p>
+<table>
+  <tr><th style="width:28%">Driver</th><th>Detail</th></tr>
+  <tr>
+    <td><strong>1. Discomfort with the programme direction</strong><br><span class="badge b-high">Original trigger</span></td>
+    <td>She had already intended to resign because she was not at peace with the phase the work was
+        moving into — specifically the growing technology load on teachers. This pre-dated her PhD
+        admission.</td>
+  </tr>
+  <tr>
+    <td><strong>2. PhD admission</strong><br><span class="badge b-ok">Practical driver</span></td>
+    <td>Admission secured to a programme starting <strong>early January</strong>. She intends to spend
+        the intervening <strong>four months</strong> at home in Lahore. This set the timing of her exit.</td>
+  </tr>
+  <tr>
+    <td><strong>3. Fatigue</strong><br><span class="badge b-high">Previously flagged</span></td>
+    <td>She reported being significantly tired and noted she had raised this earlier as well. She had
+        also undergone surgery and taken medical leave during her tenure.</td>
+  </tr>
+</table>
+<div class="crit box">
+  <div class="hdr">Point to note for HR</div>
+  <p>This is not simply a "leaving to study" case. Dissatisfaction with the field technology rollout was
+  an <strong>existing and independent factor</strong>, and the fatigue had been flagged before without
+  resolution. Recording the exit as PhD-driven alone would obscure a genuine retention signal.</p>
+</div>
+
+<h2><span class="num">3</span>What Worked — Strengths</h2>
+<ul>
+  <li><strong>Teamwork and atmosphere.</strong> A genuinely strong teamwork culture at the hub. Her
+      biggest personal learning was <strong>collaboration and how to support others</strong>.</li>
+  <li><strong>Technology team.</strong> "A big support, always." Her concerns were about product
+      decisions, <strong>not</strong> the people delivering them.</li>
+  <li><strong>Manager and colleagues.</strong> Support was consistently available; colleagues stepped in
+      whenever a field issue arose.</li>
+  <li><strong>Cover during medical leave.</strong> Coaches took on her workload voluntarily during her
+      surgery and recovery. Nothing was left unfinished — her strongest example of the culture.</li>
+  <li><strong>Trainings and summer workstreams.</strong> Every member delivered their share without
+      needing follow-up.</li>
+</ul>
+<div class="good box">
+  <div class="hdr">Strength to protect</div>
+  <p>Peer support and voluntary workload cover are a demonstrated strength. They should be formally
+  recognised rather than assumed.</p>
+</div>
+
+<h2><span class="num">4</span>Issues Formally Flagged</h2>
+
+<h3>4.1 Professionalism and professional ethics &nbsp;<span class="badge b-high">Primary flag</span></h3>
+<p>Her strongest concern, raised twice — at organisational level and again when asked specifically about
+HR and the RM cadre.</p>
+<ul>
+  <li><strong>Workplace language.</strong> An overall shortfall in professionalism, particularly in the
+      language used in the office. She was clear that her concern is <em>not</em> ordinary humour, but
+      remarks that go "over the line" — and that a number of people do this.</li>
+  <li><strong>No defined boundary</strong> on what is and is not appropriate to discuss during office
+      hours.</li>
+  <li><strong>RMs discussing coaches with other coaches.</strong> Her most specific concern. She
+      repeatedly heard information not meant for her — about another sector or another coach — shared
+      with her directly by an RM. RM-to-RM discussion is understandable; an RM discussing a coach with a
+      <strong>different, subordinate coach is unprofessional</strong>. The impact: it creates a
+      pre-formed impression of that coach, and because the practice is widespread, "everyone ends up
+      knowing something about everyone." She described the damage as unpredictable. Many coaches are
+      also personal friends, so information received in one capacity distorts the relationship in
+      another. She had <strong>already raised this with Bilal</strong> — this is not the first report.</li>
+</ul>
+<div class="warn box">
+  <div class="hdr">Action she requested</div>
+  <p>A deliberate effort on professional ethics and communication boundaries, involving
+  <strong>everyone including leadership and the RM cadre</strong> — not coaches alone.</p>
+</div>
+
+<h3>4.2 Technology is burdening teachers rather than supporting them</h3>
+<p>She named the tools specifically: the <strong>chatbot</strong>, <strong>AI-based transcription</strong>
+and the <strong>digital lesson plans</strong>. In her own assessment these are adding to teachers' burden
+instead of facilitating their work.</p>
+<ul>
+  <li>She sees teachers visibly upset and distressed, <strong>particularly those receiving feedback on
+      lesson-plan quality</strong> — so the concern is how quality judgements reach teachers, not the
+      tools' existence.</li>
+  <li>In fairness, she accepted that some of this may <strong>streamline over time</strong>; her
+      objection is to the present experience on the ground.</li>
+  <li>This is what produced her sense of being "in the wrong place, specifically with regard to teachers
+      and students."</li>
+</ul>
+<div class="crit box">
+  <div class="hdr">Why this matters most</div>
+  <p>This is a <strong>mission-alignment concern</strong>, not a product complaint. A coach with 2.5
+  years in the field is reporting that what we build is distressing the people the organisation exists to
+  serve. Of everything raised, this carries the greatest risk.</p>
+</div>
+
+<h3>4.3 The escalation route feels closed</h3>
+<ul>
+  <li>She raised these concerns in multiple forums and directly with her RM, and described herself as
+      someone who speaks up consistently.</li>
+  <li>The response she received was that these matters are <strong>not within the field team's
+      control</strong> — decisions come from leadership, and the field can raise concerns but nothing
+      more.</li>
+  <li>Her conclusion after 2.5 years: anything originating from the leadership mindset has to be
+      implemented regardless of whether it benefits the field.</li>
+</ul>
+<div class="warn box">
+  <div class="hdr">Action she requested</div>
+  <p>A credible feedback loop where field concerns visibly influence decisions instead of being
+  acknowledged and closed. Her position amounts to learned helplessness — someone who spoke up for 2.5
+  years concluded that speaking up changed nothing.</p>
+</div>
+
+<h3>4.4 Product testing is not conducted in representative schools</h3>
+<p>Her most concrete and most implementable recommendation.</p>
+<ul>
+  <li>She credited the organisation for <strong>having</strong> sent staff into the field to test. But
+      from what she has heard, testing has largely been in schools that are <strong>nearby, better
+      resourced and urban</strong>.</li>
+  <li>Conditions differ sharply where coaches actually work — the <strong>villages around Tarnol</strong>,
+      where conditions are very poor, and the <strong>hilly, remote settlements with no internet
+      facility at all</strong>.</li>
+  <li><strong>Her recommendation:</strong> the teams building these tools should themselves visit the
+      distant, low-resource schools, so they get a <strong>reality check</strong> and can design in a
+      more grounded way. She did not ask for the tools to be withdrawn — she asked for the
+      <strong>builders to be put on the ground</strong>.</li>
+</ul>
+
+<h2><span class="num">5</span>Function-by-Function Feedback</h2>
+<table>
+  <tr><th style="width:23%">Function</th><th style="width:13%">Status</th><th>Detail</th></tr>
+  <tr><td><strong>Team &amp; colleagues</strong></td><td><span class="badge b-ok">Positive</span></td>
+      <td>Strong support and collaboration throughout.</td></tr>
+  <tr><td><strong>Technology team</strong></td><td><span class="badge b-ok">Positive</span></td>
+      <td>Consistently supportive; no concerns about the team itself.</td></tr>
+  <tr><td><strong>Reporting Manager (RM)</strong></td><td><span class="badge b-high">Flag</span></td>
+      <td>Supportive overall. Flagged: professional ethics — RMs should not discuss one coach with another coach.</td></tr>
+  <tr><td><strong>Human Resources</strong></td><td><span class="badge b-high">Flag</span></td>
+      <td>No operational complaints. Flagged: professional ethics and workplace language.</td></tr>
+  <tr><td><strong>Admin</strong></td><td><span class="badge b-ok">Resolved</span></td>
+      <td>No issues. The faulty <strong>switch</strong> was raised and has since been repaired (attended to at 9 pm).</td></tr>
+  <tr><td><strong>IT</strong></td><td><span class="badge b-ok">Clear</span></td>
+      <td>No issues beyond the switch, now resolved.</td></tr>
+  <tr><td><strong>Operations &amp; Logistics</strong></td><td><span class="badge b-ok">Clear</span></td>
+      <td>No issues at all, including the operations lead — "everything with you people has been very good."</td></tr>
+  <tr><td><strong>Hub location &amp; commute</strong></td><td><span class="badge b-ok">Resolved</span></td>
+      <td>Explicitly described as a <strong>personal</strong> difficulty, not an organisational failing —
+          her home was far from the hub. Resolved through pick-up arrangements. She noted Hamza travels
+          longer as he is collected first, but treated this as a matter between friends, and confirmed
+          she received <strong>good support</strong>.</td></tr>
+</table>
+
+<h2><span class="num">6</span>Recommended Action Items</h2>
+<table>
+  <tr><th style="width:5%">#</th><th style="width:40%">Action</th><th style="width:20%">Owner</th>
+      <th style="width:11%">Priority</th><th style="width:8%">Ref</th></tr>
+  <tr><td><strong>1</strong></td>
+      <td>Run a structured intervention on <strong>professional ethics, workplace language and
+          communication boundaries</strong> — covering the RM cadre and leadership, not coaches alone.</td>
+      <td>Human Resources</td><td><span class="badge b-high">High</span></td><td>4.1</td></tr>
+  <tr><td><strong>2</strong></td>
+      <td>Issue written guidance that <strong>an RM must not discuss a coach's performance or issues with
+          other coaches or subordinates</strong>, with the reasoning explained.</td>
+      <td>HR + RM Leads</td><td><span class="badge b-high">High</span></td><td>4.1</td></tr>
+  <tr><td><strong>3</strong></td>
+      <td>Require product and technology teams to conduct <strong>field testing in remote, low-resource
+          and low- or no-connectivity schools</strong> — e.g. the Tarnol-area villages and hilly
+          settlements — not only nearby urban schools.</td>
+      <td>Product / Tech Leadership</td><td><span class="badge b-high">High</span></td><td>4.4</td></tr>
+  <tr><td><strong>4</strong></td>
+      <td>Review the <strong>workload the current tools place on teachers</strong> and measure that
+          burden <em>before</em> further tooling is introduced. Review how lesson-plan quality feedback
+          is delivered.</td>
+      <td>Programme / Product</td><td><span class="badge b-high">High</span></td><td>4.2</td></tr>
+  <tr><td><strong>5</strong></td>
+      <td>Establish a visible <strong>field-to-leadership feedback loop</strong> so escalated concerns
+          receive a documented response.</td>
+      <td>Leadership</td><td><span class="badge b-med">Medium</span></td><td>4.3</td></tr>
+  <tr><td><strong>6</strong></td>
+      <td>Formally <strong>recognise the peer-support culture</strong> as a retention strength worth
+          protecting.</td>
+      <td>Human Resources</td><td><span class="badge b-med">Medium</span></td><td>3</td></tr>
+</table>
+<div class="warn box">
+  <div class="hdr">Caution on item 1</div>
+  <p>If this becomes professional-conduct training for coaches only, it inverts her point. She was
+  explicit that leadership and the RM cadre must be included.</p>
+</div>
+
+<h2><span class="num">7</span>Overall Assessment</h2>
+<p>The separation is <strong>voluntary and amicable</strong>, with no performance or conduct concerns on
+either side; a rehire recommendation is appropriate. The exit is driven principally by a confirmed
+<strong>PhD admission in January</strong> and a need for rest — but dissatisfaction with the direction of
+the field technology rollout was an existing and independent factor, and should not be recorded as a
+study-related departure alone.</p>
+<p>Her feedback carries weight because it is specific. She distinguishes clearly between what worked —
+people, collaboration, peer support, admin and operations — and what did not: professional boundaries,
+the burden the current tools place on teachers, and product testing that is not representative of the
+schools coaches actually serve. <strong>Action items 1 to 4 are the substantive takeaways.</strong> The
+interview closed with thanks for her service and best wishes for her doctoral studies.</p>
+
+<h2><span class="num">8</span>Appendix — Verbatim Quotes</h2>
+
+<div class="quote">
+  <span class="who">On her reason for leaving</span>
+  "Mujhe barre arse se ek guilt si feeling honay lag gayi thi ke maybe I am in the wrong place —
+  specifically with regard to teachers and students."
+  <span class="en">For a long time I had begun to feel a sense of guilt — that perhaps I am in the wrong
+  place, specifically with regard to teachers and students.</span>
+</div>
+
+<div class="quote">
+  <span class="who">On RM conduct — the primary flag</span>
+  "Ek RM jab ek coach se discuss kar raha ho, aur apne subordinate se kisi aur coach ke hawale se baat
+  kar raha ho, to woh bohat unprofessional si baat ho jati hai."
+  <span class="en">When an RM is discussing matters with a coach, and is talking to his own subordinate
+  about some other coach, that becomes a very unprofessional thing.</span>
+</div>
+
+<div class="quote">
+  <span class="who">On technology and teachers</span>
+  "Woh lesson plans aur abhi jo is time par idea hai — technology — woh teachers ko burden bohat zyada
+  kar raha hai, facilitate karne ki bajaye. Main teachers ko bohat upset, bohat pareshan dekhti hoon."
+  <span class="en">Those lesson plans, and the current idea of technology, are burdening teachers a
+  great deal rather than facilitating them. I see teachers who are very upset and very distressed.</span>
+</div>
+
+<div class="quote">
+  <span class="who">On escalation</span>
+  "Jo cheez leadership ke mindset se aayegi, humein implement karni hi karni hai — chahay humein us se
+  jitna marzi faida ho."
+  <span class="en">Whatever comes from the leadership mindset, we simply have to implement it —
+  regardless of how much benefit it actually brings us.</span>
+</div>
+
+<div class="quote">
+  <span class="who">On field testing — her key recommendation</span>
+  "Jo team yeh cheezain bana rahi hai, woh un schools mein bhi jaye jo bohat door hain, jahan proper
+  resources nahi hain, jahan actual masail hain — taake un ko ek reality check mil sake aur woh zyada
+  grounded ho ke cheezain bana sakein."
+  <span class="en">The team that is building these things should also go to the schools that are far
+  away, where there are no proper resources, where the real problems are — so that they get a reality
+  check and can build things in a more grounded way.</span>
+</div>
+
+<div class="sign"><span>Tahir Saleem</span></div>
+
+</div>
+
+<p class="foot">
+  <strong>Document control.</strong> Prepared from the exit conversation held on 25 August 2026. Quotes
+  are transcribed and lightly cleaned for readability; wording has not been altered. Confidential
+  internal HR record — not for circulation beyond HR and relevant leadership.
+</p>
+
+</body>
+</html>
