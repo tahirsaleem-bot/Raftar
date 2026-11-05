@@ -110,18 +110,51 @@
     .sidebar.open{transform:translateX(0)}
     .topbar{display:flex}
   }
+.pw{position:relative}
+.pw input.pwf{padding-right:52px}
+.pw button.pw-t{position:absolute;right:3px;top:50%;transform:translateY(-50%);width:44px;height:40px;margin:0;padding:0;border:0;border-radius:10px;background:transparent;color:var(--mut,#94A3B8);display:grid;place-items:center;cursor:pointer;box-shadow:none}
+.pw button.pw-t:hover{color:var(--fg,#F8FAFC);filter:none}
+.pw button.pw-t svg{width:20px;height:20px}
+.pw input.pwf{width:100%}
+  /* Meter Reading: the embedded dashboard gets the width and height it needs */
+  #view-meter.content,#view-exit.content{max-width:1240px}
+  .meter-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .meter-head .page-sub{margin:0}
+  .meter-open{flex:0 0 auto;text-decoration:none;white-space:nowrap}
+  .meter-frame{padding:0;overflow:hidden}
+  .meter-frame iframe{width:100%;height:calc(100vh - 170px);min-height:560px;border:0;display:block}
+  @media(max-width:600px){
+    #view-meter.content,#view-exit.content{padding:12px 0 24px}
+    .meter-head{padding:0 14px;margin-bottom:10px}
+    .meter-head .page-title{font-size:18px}
+    .meter-sub{display:none}
+    .meter-open{padding:8px 12px;font-size:13px}
+    .meter-frame{border-radius:0;border-left:0;border-right:0}
+    .meter-frame iframe{height:calc(100vh - 120px);min-height:520px}
+  }
 </style>
 </head>
 <body>
 <!-- LOGIN -->
 <div id="loginView">
-  <div class="brandBig"><img class="logo" src="https://raftar-km-agent-production.up.railway.app/brand-logo" alt="Raftar" style="object-fit:cover;background:transparent"><div><h1 style="margin:0;font-size:22px">Raftar</h1><div class="sub">Operations agent</div></div></div>
-  <p class="sub" style="text-align:center;margin-bottom:16px">Log in with your name and a personal PIN. Your entries stay private to you.</p>
-  <div class="card">
-    <div class="field" style="margin-bottom:12px"><label>Your name</label><input id="loginName" placeholder="e.g. Tahir Saleem" autocomplete="name"></div>
-    <div class="field" style="margin-bottom:14px"><label>PIN (4-8 digits) — first time sets it</label><input id="loginPin" type="password" inputmode="numeric" placeholder="••••" autocomplete="off"></div>
-    <button class="btn" id="loginBtn" style="width:100%">Log in / Sign up</button>
+  <div class="brandBig"><img class="logo" src="https://meter-reading-production-2d7f.up.railway.app/brand-logo" alt="Raftar" style="object-fit:cover;background:transparent"><div><h1 style="margin:0;font-size:22px">Raftar</h1><div class="sub">Operations agent</div></div></div>
+  <p class="sub" style="text-align:center;margin-bottom:16px" id="loginSub">Sign in with your Raftar email and password — the same one you use for the Fleet dashboard and Exit Interviews.</p>
+  <div class="card" id="loginCard">
+    <div class="field" style="margin-bottom:12px"><label for="loginName">Email</label><input id="loginName" type="email" inputmode="email" placeholder="name@niete.edu.pk" autocomplete="username"></div>
+    <div class="field" style="margin-bottom:10px"><label for="loginPin">Password</label><input id="loginPin" type="password" placeholder="Password" autocomplete="current-password"></div>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:14px;cursor:pointer;min-height:44px"><input type="checkbox" id="rememberMe" checked style="width:18px;height:18px"> Remember me on this device</label>
+    <button class="btn" id="loginBtn" style="width:100%">Sign in</button>
     <div class="hint" id="loginMsg"></div>
+  </div>
+  <!-- first sign-in with the emailed temporary password -->
+  <div class="card hide" id="setPwCard">
+    <b style="font-size:16px">Set your own password</b>
+    <p class="sub" style="margin:6px 0 12px">Welcome! You signed in with a temporary password. Choose your own so you can remember it.</p>
+    <div class="field" style="margin-bottom:12px"><label for="newPw">New password (at least 6 characters)</label><input id="newPw" type="password" autocomplete="new-password"></div>
+    <div class="field" style="margin-bottom:14px"><label for="newPw2">Repeat new password</label><input id="newPw2" type="password" autocomplete="new-password"></div>
+    <button class="btn" id="setPwBtn" style="width:100%">Save my password</button>
+    <div class="hint" id="setPwMsg"></div>
+    <p style="text-align:center;margin-top:12px;font-size:14px"><a href="#" id="setPwSkip">Skip for now</a></p>
   </div>
 </div>
 
@@ -129,7 +162,7 @@
 <div id="appView" class="app hide">
   <aside class="sidebar" id="sidebar">
     <div class="side-top">
-      <div class="brand"><img class="logo" src="https://raftar-km-agent-production.up.railway.app/brand-logo" alt="Raftar" style="object-fit:cover;background:transparent"><div><h1>Raftar</h1><p class="tag">Operations agent</p></div></div>
+      <div class="brand"><img class="logo" src="https://meter-reading-production-2d7f.up.railway.app/brand-logo" alt="Raftar" style="object-fit:cover;background:transparent"><div><h1>Raftar</h1><p class="tag">Operations agent</p></div></div>
     </div>
     <div class="side-label">Skills</div>
     <div class="skills">
@@ -138,6 +171,9 @@
       </div>
       <div class="skill" id="nav-meter" data-view="meter">
         <div class="ic">📟</div><div class="nm">Meter Reading Automation</div><div class="dot" title="Live"></div>
+      </div>
+      <div class="skill" id="nav-exit" data-view="exit" style="display:none">
+        <div class="ic">📝</div><div class="nm">Exit Interviews</div><div class="dot" title="Live"></div>
       </div>
     </div>
     <div class="side-foot">
@@ -205,27 +241,77 @@
 
     <!-- VIEW: Meter Reading (live) -->
     <div class="content hide" id="view-meter">
-      <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div>
-          <h2 class="page-title">Meter Reading Automation</h2>
-          <p class="page-sub">Live — reads meter/odometer photos from WhatsApp and logs them to Google Sheets.</p>
+      <div class="meter-head">
+        <div style="min-width:0">
+          <h2 class="page-title">Meter Reading</h2>
+          <p class="page-sub meter-sub">Reads meter photos from the hub WhatsApp groups and logs them to Google Sheets.</p>
         </div>
-        <a class="btn" href="https://raftar-km-agent-production.up.railway.app/dashboard" target="_blank" rel="noopener" style="flex:0 0 auto;text-decoration:none">Open full dashboard ↗</a>
+        <a class="btn meter-open" href="https://meter-reading-production-2d7f.up.railway.app/dashboard" target="_blank" rel="noopener">Open in new tab ↗</a>
       </div>
-      <div class="card" style="padding:0;overflow:hidden">
-        <iframe src="https://raftar-km-agent-production.up.railway.app/dashboard"
-                title="Meter Reading Dashboard"
-                style="width:100%;height:72vh;border:0;display:block"
-                loading="lazy"></iframe>
+      <div class="card meter-frame">
+        <iframe src="https://meter-reading-production-2d7f.up.railway.app/dashboard"
+                title="Meter Reading Dashboard" loading="lazy"></iframe>
+      </div>
+    </div>
+
+    <!-- VIEW: Exit Interviews (live, separate Railway app) -->
+    <div class="content hide" id="view-exit">
+      <div class="meter-head">
+        <div style="min-width:0">
+          <h2 class="page-title">Exit Interviews</h2>
+          <p class="page-sub meter-sub">Resignations, interview scheduling and the confidential exit records.</p>
+        </div>
+        <a class="btn meter-open" href="https://exit-interview-agent-production.up.railway.app/" target="_blank" rel="noopener">Open in new tab ↗</a>
+      </div>
+      <div class="card meter-frame">
+        <iframe id="exitFrame" data-src="https://exit-interview-agent-production.up.railway.app/" title="Exit Interviews Dashboard"></iframe>
       </div>
     </div>
 
     <!-- VIEW: Users (admin) -->
     <div class="content hide" id="view-users">
       <h2 class="page-title">Users</h2>
-      <p class="page-sub">Manage who can use Raftar. Super Admin can add users and assign roles.</p>
-      <div class="card" id="addUserCard">
+      <p class="page-sub">Add someone with their email and tick what they can open. They get one email with a password.</p>
+      <div class="card" id="rauCard" style="display:none">
+        <b style="font-size:15px">➕ Add user</b>
+        <div class="row" style="margin-top:12px;align-items:flex-end;gap:12px">
+          <div class="field" style="flex:1;min-width:220px"><label for="rauEmail">Email</label><input id="rauEmail" type="email" inputmode="email" autocomplete="off" placeholder="name@niete.edu.pk"></div>
+        </div>
+        <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:12px">
+          <label style="font-weight:400;display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer"><input type="checkbox" id="rauMeter" checked style="width:18px;height:18px"> 📟 Meter Reading</label>
+          <label style="font-weight:400;display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer"><input type="checkbox" id="rauExit" style="width:18px;height:18px"> 📝 Exit Interviews</label>
+        </div>
+        <button class="btn" id="rauAddBtn" style="margin-top:10px">Add user</button>
+        <div id="rauMsg" class="sub" style="margin-top:10px" role="status"></div>
+      </div>
+      <div class="card" id="rauListCard" style="display:none;margin-top:14px">
+        <b style="font-size:15px">👥 People with access</b>
+        <p class="sub" style="margin-top:4px">Tick or untick to change what someone can open. Changes save at once.</p>
+        <div id="rauList" style="margin-top:10px;overflow-x:auto"><p class="sub">Loading...</p></div>
+      </div>
+      <div class="card hide" id="dashAccessCard" style="display:none">
+        <b style="font-size:14px">🔐 Meter Reading dashboard access</b>
+        <p class="sub" style="margin-top:4px">Email daalein — system khud password bana kar us email par bhej dega. Wo login ke baad "Change password" se apna password rakh lega.</p>
+        <div class="row" style="margin-top:10px;align-items:flex-end">
+          <div class="field" style="flex:1;min-width:220px"><label for="daEmail">Email</label><input id="daEmail" type="email" inputmode="email" autocomplete="off" placeholder="name@niete.edu.pk"></div>
+          <button class="btn" id="daInviteBtn" style="flex:0 0 auto">Send invite</button>
+        </div>
+        <div id="daMsg" class="sub" style="margin-top:8px" role="status"></div>
+        <div id="daList" style="margin-top:12px"><p class="sub">Loading...</p></div>
+      </div>
+      <div class="card hide" id="exitAccessCard" style="display:none;margin-top:14px">
+        <b style="font-size:14px">📝 Exit Interviews access</b>
+        <p class="sub" style="margin-top:4px">Confidential HR records — sirf unhein dein jinhein zaroorat ho. Naye shakhs ko password email ho jayega; jis ke paas pehle se dashboard account hai wo usi password se login karega.</p>
+        <div class="row" style="margin-top:10px;align-items:flex-end">
+          <div class="field" style="flex:1;min-width:220px"><label for="xaEmail">Email</label><input id="xaEmail" type="email" inputmode="email" autocomplete="off" placeholder="name@niete.edu.pk"></div>
+          <button class="btn" id="xaInviteBtn" style="flex:0 0 auto">Give access</button>
+        </div>
+        <div id="xaMsg" class="sub" style="margin-top:8px" role="status"></div>
+        <div id="xaList" style="margin-top:12px"><p class="sub">Loading...</p></div>
+      </div>
+      <div class="card hide" id="addUserCard" style="margin-top:14px">
         <b style="font-size:14px">➕ Add a user</b>
+        <p class="sub" style="margin-top:4px">Ye <b>is Raftar app</b> (naam + PIN) ka login hai. Sirf dashboard dikhana ho to upar wala "Dashboard access" kaafi hai.</p>
         <div class="row" style="margin-top:10px">
           <div class="field"><label>Name</label><input id="nuName" placeholder="Full name"></div>
           <div class="field"><label>PIN (4-8 digits)</label><input id="nuPin" inputmode="numeric" placeholder="e.g. 1234"></div>
@@ -235,12 +321,13 @@
           <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:4px">
             <label style="font-weight:400;display:flex;align-items:center;gap:6px"><input type="checkbox" class="nuSkill" value="pa" checked> 🎙️ People Analyzer</label>
             <label style="font-weight:400;display:flex;align-items:center;gap:6px"><input type="checkbox" class="nuSkill" value="meter"> 📟 Meter Reading</label>
+            <label style="font-weight:400;display:flex;align-items:center;gap:6px"><input type="checkbox" class="nuSkill" value="exit"> 📝 Exit Interviews</label>
           </div>
         </div>
         <button class="btn" id="addUserBtn" style="margin-top:12px">Add user</button>
         <span id="addUserMsg" class="sub" style="margin-left:10px"></span>
       </div>
-      <div class="card" style="margin-top:14px">
+      <div class="card hide" style="margin-top:14px">
         <b style="font-size:14px">All users</b>
         <div id="usersList" style="margin-top:10px"><p class="sub">Loading...</p></div>
       </div>
@@ -252,16 +339,24 @@
 
 <script>
 const $=s=>document.querySelector(s);
-let TOKEN=localStorage.getItem('pa_token')||'', USER=localStorage.getItem('pa_name')||'', ROLE=localStorage.getItem('pa_role')||'user', SKILLS=localStorage.getItem('pa_skills')||'';
+// "Remember me" keeps the session in localStorage (survives closing the
+// browser); unchecked it lives in sessionStorage and ends with the tab.
+let STORE=sessionStorage.getItem('pa_token')?sessionStorage:localStorage;
+let TOKEN=STORE.getItem('pa_token')||'', USER=STORE.getItem('pa_name')||'', ROLE=STORE.getItem('pa_role')||'user', SKILLS=STORE.getItem('pa_skills')||'';
 let CURVIEW='pa';
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)};
 const isAdmin=()=>ROLE==='admin'||ROLE==='super_admin';
 // Which skills this user may see. Super Admin always sees all; otherwise the
 // assigned skills (default: People Analyzer for users, both for admins).
-const allowedSkills=()=>{ if(ROLE==='super_admin') return ['pa','meter']; const s=(SKILLS||'').split(',').map(x=>x.trim()).filter(Boolean); if(s.length) return s; return ROLE==='admin'?['pa','meter']:['pa']; };
-const initialView=()=>{ const h=(location.hash||'').replace('#','').trim(); return (h==='meter'||h==='pa')?h:'pa'; };
+// People Analyzer is hidden for now (Tahir, 2026-10-26) — data and code are kept; set true to bring it back.
+const PA_ENABLED=false;
+// API calls go to the same base the page was served from ('' at the root, '/pa' on old links)
+const API_BASE=location.pathname.startsWith('/pa')?'/pa':'';
+const allowedSkills=()=>{ let a; if(ROLE==='super_admin') a=['pa','meter','exit']; else { const s=(SKILLS||'').split(',').map(x=>x.trim()).filter(Boolean); a=s.length?s:(ROLE==='admin'?['pa','meter']:['pa']); }
+  if(!PA_ENABLED) a=a.filter(x=>x!=='pa'); return a.length?a:['meter']; };
+const initialView=()=>{ const h=(location.hash||'').replace('#','').trim(); if(h==='meter'||(h==='pa'&&PA_ENABLED)||(h==='exit'&&allowedSkills().includes('exit'))) return h; return PA_ENABLED?'pa':'meter'; };
 async function api(p,o={}){o.headers=Object.assign({},o.headers,TOKEN?{Authorization:'Bearer '+TOKEN}:{});
-  const r=await fetch('/pa'+p,o); if(r.status===401){logout();throw new Error('Session expired');} return r.json();}
+  const r=await fetch(API_BASE+p,o); if(r.status===401){logout();throw new Error('Session expired');} return r.json();}
 function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
 
 /* ---------- Login ---------- */
@@ -273,31 +368,58 @@ function applyUser(){
   const allow=allowedSkills();
   $('#nav-pa').style.display=allow.includes('pa')?'flex':'none';
   $('#nav-meter').style.display=allow.includes('meter')?'flex':'none';
+  $('#nav-exit').style.display=allow.includes('exit')?'flex':'none';
   $('#nav-users').style.display=isAdmin()?'flex':'none';
   $('#nuRoleWrap').style.display=(ROLE==='super_admin')?'block':'none';
   $('#nuSkillsWrap').style.display=(ROLE==='super_admin')?'block':'none';
+  $('#dashAccessCard').style.display=(ROLE==='super_admin')?'block':'none';
+  $('#exitAccessCard').style.display=(ROLE==='super_admin')?'block':'none';
+  $('#rauCard').style.display=(ROLE==='super_admin')?'block':'none';
+  $('#rauListCard').style.display=(ROLE==='super_admin')?'block':'none';
+  if(!PA_ENABLED){ const pa=document.querySelector('.nuSkill[value="pa"]'); if(pa){ pa.checked=false; pa.closest('label').style.display='none'; } const m=document.querySelector('.nuSkill[value="meter"]'); if(m) m.checked=true; }
   // If the current view isn't allowed for this user, move to their first allowed skill
-  if((CURVIEW==='pa'&&!allow.includes('pa'))||(CURVIEW==='meter'&&!allow.includes('meter'))) switchView(allow[0]||'pa');
+  if((CURVIEW==='pa'&&!allow.includes('pa'))||(CURVIEW==='meter'&&!allow.includes('meter'))||(CURVIEW==='exit'&&!allow.includes('exit'))) switchView(allow[0]||'pa');
 }
 function showApp(){$('#loginView').classList.add('hide');$('#appView').classList.remove('hide');applyUser();$('#entryDate').value=new Date().toISOString().slice(0,10);}
 function showLogin(){$('#appView').classList.add('hide');$('#loginView').classList.remove('hide');}
-function logout(){TOKEN='';USER='';ROLE='user';SKILLS='';localStorage.clear();showLogin();}
+function logout(){TOKEN='';USER='';ROLE='user';SKILLS='';['pa_token','pa_name','pa_role','pa_skills'].forEach(k=>{localStorage.removeItem(k);sessionStorage.removeItem(k);});showLogin();}
+try{ if(localStorage.getItem('pa_last_email')) $('#loginName').value=localStorage.getItem('pa_last_email'); }catch(e){}
+// emailed temporary password, kept in memory only until the person picks their own
+let TEMP_PW='';
 $('#logoutBtn').onclick=logout;
 $('#loginBtn').onclick=async()=>{
-  const name=$('#loginName').value.trim(), pin=$('#loginPin').value.trim();
-  if(!name){$('#loginMsg').textContent='Enter your name';return;}
-  if(!/^\d{4,8}$/.test(pin)){$('#loginMsg').textContent='PIN must be 4-8 digits';return;}
-  $('#loginBtn').disabled=true;$('#loginMsg').innerHTML='<span class="spin"></span>Checking...';
+  const email=$('#loginName').value.trim().toLowerCase(), password=$('#loginPin').value;
+  if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)){$('#loginMsg').textContent='Enter your email address';return;}
+  if(!password){$('#loginMsg').textContent='Enter your password';return;}
+  $('#loginBtn').disabled=true;$('#loginMsg').innerHTML='<span class="spin"></span>Signing in...';
   try{
-    const r=await fetch('/pa/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,pin})}).then(x=>x.json());
+    const r=await fetch(API_BASE+'/api/login-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})}).then(x=>x.json());
     if(!r.ok) throw new Error(r.error);
+    if(r.mustChange) TEMP_PW=password;
     TOKEN=r.token;USER=r.name;ROLE=r.role||'user';SKILLS=r.skills||'';
-    localStorage.setItem('pa_token',TOKEN);localStorage.setItem('pa_name',USER);localStorage.setItem('pa_role',ROLE);localStorage.setItem('pa_skills',SKILLS);
-    $('#loginMsg').textContent='';$('#loginPin').value='';showApp();switchView(initialView());
-    toast(r.isNew?'Account created ✓':'Welcome back ✓');
+    const remember=$('#rememberMe').checked;
+    STORE=remember?localStorage:sessionStorage;
+    if(remember) localStorage.setItem('pa_last_email',email); else localStorage.removeItem('pa_last_email');
+    STORE.setItem('pa_token',TOKEN);STORE.setItem('pa_name',USER);STORE.setItem('pa_role',ROLE);STORE.setItem('pa_skills',SKILLS);
+    $('#loginMsg').textContent='';$('#loginPin').value='';
+    if(TEMP_PW){ $('#loginCard').classList.add('hide'); $('#loginSub').classList.add('hide'); $('#setPwCard').classList.remove('hide'); setTimeout(()=>$('#newPw').focus(),60); return; }
+    showApp();switchView(initialView());
+    toast('Welcome back ✓');
   }catch(e){$('#loginMsg').textContent='⚠️ '+e.message;}finally{$('#loginBtn').disabled=false;}
 };
 $('#loginPin').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginBtn').click();});
+function finishSetPw(msg){ TEMP_PW=''; $('#newPw').value='';$('#newPw2').value='';$('#setPwMsg').textContent='';
+  $('#setPwCard').classList.add('hide'); $('#loginCard').classList.remove('hide'); $('#loginSub').classList.remove('hide');
+  showApp(); switchView(initialView()); toast(msg); }
+$('#setPwBtn').onclick=async()=>{const a=$('#newPw').value,b=$('#newPw2').value,m=$('#setPwMsg');
+  if(a.length<6){m.textContent='⚠️ Use at least 6 characters';return;}
+  if(a!==b){m.textContent='⚠️ The two passwords do not match';return;}
+  $('#setPwBtn').disabled=true;m.innerHTML='<span class="spin"></span>Saving...';
+  try{const r=await api('/api/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({current:TEMP_PW,newpw:a})});
+    if(!r.ok)throw new Error(r.error);finishSetPw('Password saved ✓');}
+  catch(e){m.textContent='⚠️ '+e.message;}finally{$('#setPwBtn').disabled=false;}};
+$('#newPw2').addEventListener('keydown',e=>{if(e.key==='Enter')$('#setPwBtn').click();});
+$('#setPwSkip').onclick=e=>{e.preventDefault();finishSetPw('Welcome ✓');};
 
 /* ---------- Sidebar nav ---------- */
 function closeSidebar(){$('#sidebar').classList.remove('open');$('#scrim').classList.add('hide');}
@@ -308,20 +430,26 @@ function switchView(v){
   // never open a skill this user isn't allowed to see
   if(v==='pa'&&!allow.includes('pa')) v=allow[0]||'pa';
   if(v==='meter'&&!allow.includes('meter')) v=allow.includes('pa')?'pa':(allow[0]||'pa');
+  if(v==='exit'&&!allow.includes('exit')) v=allow[0]||'meter';
   CURVIEW=v;
   $('#view-pa').classList.toggle('hide',v!=='pa');
   $('#view-meter').classList.toggle('hide',v!=='meter');
+  $('#view-exit').classList.toggle('hide',v!=='exit');
+  // load the exit app only when first opened, so users without it never fetch it
+  if(v==='exit'){ const f=$('#exitFrame'); if(f&&!f.src) f.src=f.dataset.src; }
   $('#view-users').classList.toggle('hide',v!=='users');
   $('#nav-pa').classList.toggle('active',v==='pa');
   $('#nav-meter').classList.toggle('active',v==='meter');
-  $('#topTitle').textContent=v==='users'?'Users':v==='meter'?'Meter Reading':'People Analyzer';
+  $('#nav-exit').classList.toggle('active',v==='exit');
+  $('#topTitle').textContent=v==='users'?'Users':v==='meter'?'Meter Reading':v==='exit'?'Exit Interviews':'People Analyzer';
   // reflect the current skill in the URL so it can be copied/shared
-  try{ if(v==='meter') history.replaceState(null,'','#meter'); else if(v==='pa') history.replaceState(null,'',location.pathname); }catch(e){}
-  if(v==='users') loadUsers();
+  try{ if(v==='meter'||v==='exit') history.replaceState(null,'','#'+v); else if(v==='pa') history.replaceState(null,'',location.pathname); }catch(e){}
+  if(v==='users'){ loadUsers(); if(ROLE==='super_admin'){ loadRaftarUsers(); } }
   closeSidebar();
 }
 $('#nav-pa').onclick=()=>switchView('pa');
 $('#nav-meter').onclick=()=>switchView('meter');
+$('#nav-exit').onclick=()=>switchView('exit');
 $('#nav-users').onclick=()=>switchView('users');
 
 /* ---------- PA tabs ---------- */
@@ -384,22 +512,82 @@ function renderAssessment(r){const s=r.summary;
   $('#copyAll').onclick=()=>{const txt=r.values.map(v=>`${v.n}. ${v.name}  [${v.rating}]\n${v.evidence}`).join('\n\n');navigator.clipboard.writeText(txt).then(()=>toast('Copied ✓'));};}
 
 /* ---------- Users (admin) ---------- */
+/* ---------- Dashboard access (email invites, super admin) ---------- */
+const escH=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// one access card per app: d = id prefix ('da' meter dashboard, 'xa' exit interviews)
+function accessCard(d,app){
+const q='?app='+app, reload=()=>loadAccess();
+async function loadAccess(){const box=$('#'+d+'List');
+  try{const r=await api('/api/admin/dashboard-users'+q);if(!r.ok)throw new Error(r.error);
+    box.innerHTML='<table class="users"><tr><th>Email</th><th>Access</th><th></th></tr>'+r.accounts.map(a=>
+      '<tr><td>'+escH(a.email)+'</td><td>'+(a.kind==='owner'?'Owner':'Invited'+(a.createdAt?' · '+new Date(a.createdAt).toLocaleDateString('en-GB'):''))+'</td><td>'+
+      (a.kind==='owner'?'':'<button class="btn ghost '+d+'Remove" data-email="'+escH(a.email)+'" style="padding:6px 12px;font-size:13px">Remove</button>')+'</td></tr>').join('')+'</table>';
+    box.querySelectorAll('.'+d+'Remove').forEach(b=>b.onclick=async()=>{const email=b.dataset.email;
+      if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='Confirm remove';setTimeout(()=>{b.dataset.armed='';b.textContent='Remove';},4000);return;}
+      b.disabled=true;try{const r=await api('/api/admin/dashboard-users/'+encodeURIComponent(email)+q,{method:'DELETE'});if(!r.ok)throw new Error(r.error);toast('Access removed ✓');reload();}catch(e){$('#'+d+'Msg').textContent='⚠️ '+e.message;b.disabled=false;}});
+  }catch(e){box.innerHTML='<p class="sub">⚠️ '+escH(e.message)+'</p>';}}
+$('#'+d+'InviteBtn').onclick=async()=>{const email=$('#'+d+'Email').value.trim().toLowerCase();const msg=$('#'+d+'Msg');
+  if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)){msg.textContent='⚠️ Sahi email likhein';return;}
+  $('#'+d+'InviteBtn').disabled=true;msg.innerHTML='<span class="spin"></span>Sending...';
+  try{const r=await api('/api/admin/dashboard-users'+q,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});if(!r.ok)throw new Error(r.error);
+    if(r.emailed){msg.textContent=r.existing?'✓ '+email+' ko access mil gaya — wo apne purane password se login karega (email bhej di).':'✓ Invite '+email+' ko bhej di gayi.';}
+    else{msg.innerHTML='⚠️ Account ban gaya lekin email nahi gayi. Ye password khud bhej dein: <b style="font-family:monospace">'+escH(r.password||'')+'</b>';}
+    $('#'+d+'Email').value='';reload();
+  }catch(e){msg.textContent='⚠️ '+e.message;}finally{$('#'+d+'InviteBtn').disabled=false;}};
+$('#'+d+'Email').addEventListener('keydown',e=>{if(e.key==='Enter')$('#'+d+'InviteBtn').click();});
+return loadAccess;}
+const loadDashAccess=accessCard('da','meter'), loadExitAccess=accessCard('xa','exit');
+/* ---------- Users: one list + one Add user ---------- */
+async function loadRaftarUsers(){const box=$('#rauList');
+  try{const r=await api('/api/admin/raftar-users');if(!r.ok)throw new Error(r.error);
+    const tick=(a,app)=>a.kind==='owner'?'✓':'<input type="checkbox" class="rauApp" data-email="'+escH(a.email)+'" value="'+app+'"'+(a.apps.includes(app)?' checked':'')+' style="width:18px;height:18px" aria-label="'+app+' for '+escH(a.email)+'">';
+    box.innerHTML='<table class="users"><tr><th>Email</th><th>📟 Meter</th><th>📝 Exit</th><th></th></tr>'+r.accounts.map(a=>
+      '<tr><td>'+escH(a.email)+(a.kind==='owner'?' <span class="rolechip role-super">Owner</span>':'')+'</td><td>'+tick(a,'meter')+'</td><td>'+tick(a,'exit')+'</td><td>'+
+      (a.kind==='owner'?'':'<button class="btn ghost rauRemove" data-email="'+escH(a.email)+'" style="padding:6px 12px;font-size:13px">Remove</button>')+'</td></tr>').join('')+'</table>';
+    box.querySelectorAll('.rauApp').forEach(c=>c.onchange=async()=>{const email=c.dataset.email;
+      const apps=[...box.querySelectorAll('.rauApp[data-email="'+CSS.escape(email)+'"]:checked')].map(x=>x.value);
+      if(!apps.length){toast('Kam az kam ek tick rakhein — hatana ho to Remove dabayein');c.checked=true;return;}
+      try{const r=await api('/api/admin/raftar-users/'+encodeURIComponent(email)+'/apps',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({apps})});if(!r.ok)throw new Error(r.error);toast('Saved ✓');}
+      catch(e){toast('Failed: '+e.message);c.checked=!c.checked;}});
+    box.querySelectorAll('.rauRemove').forEach(b=>b.onclick=async()=>{const email=b.dataset.email;
+      if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='Confirm remove';setTimeout(()=>{b.dataset.armed='';b.textContent='Remove';},4000);return;}
+      b.disabled=true;try{const r=await api('/api/admin/raftar-users/'+encodeURIComponent(email)+'/apps',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({apps:[]})});if(!r.ok)throw new Error(r.error);toast(email+' removed ✓');loadRaftarUsers();}
+      catch(e){toast('Failed: '+e.message);b.disabled=false;}});
+  }catch(e){box.innerHTML='<p class="sub">⚠️ '+escH(e.message)+'</p>';}}
+$('#rauAddBtn').onclick=async()=>{const email=$('#rauEmail').value.trim().toLowerCase(),msg=$('#rauMsg');
+  const apps=[$('#rauMeter').checked&&'meter',$('#rauExit').checked&&'exit'].filter(Boolean);
+  if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)){msg.textContent='⚠️ Sahi email likhein';return;}
+  if(!apps.length){msg.textContent='⚠️ Kam az kam ek cheez tick karein';return;}
+  $('#rauAddBtn').disabled=true;msg.innerHTML='<span class="spin"></span>Adding...';
+  try{const r=await api('/api/admin/raftar-users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,apps})});if(!r.ok)throw new Error(r.error);
+    if(!r.emailed) msg.innerHTML='⚠️ User add ho gaya lekin email nahi gayi. Ye password khud bhej dein: <b style="font-family:monospace">'+escH(r.password||'')+'</b>';
+    else msg.textContent=r.existing?'✓ '+email+' ko access mil gaya — wo apne purane password se login karega (email bhej di).':'✓ '+email+' add ho gaya — password email kar diya.';
+    $('#rauEmail').value='';loadRaftarUsers();
+  }catch(e){msg.textContent='⚠️ '+e.message;}finally{$('#rauAddBtn').disabled=false;}};
+$('#rauEmail').addEventListener('keydown',e=>{if(e.key==='Enter')$('#rauAddBtn').click();});
+
 async function loadUsers(){const box=$('#usersList');box.innerHTML='<p class="sub"><span class="spin"></span>Loading...</p>';
   try{const r=await api('/api/admin/users');if(!r.ok)throw new Error(r.error);
     const canRole=ROLE==='super_admin';
-    const skillLabel={pa:'People Analyzer',meter:'Meter Reading'};
+    const skillLabel={pa:'People Analyzer',meter:'Meter Reading',exit:'Exit Interviews'};
     box.innerHTML='<table class="users"><tr><th>Name</th><th>Role</th><th>Skills</th>'+(canRole?'<th></th>':'')+'</tr>'+
       r.users.map(u=>{const rl={super_admin:'Super Admin',admin:'Admin',user:'User'}[u.role]||'User';
         const us=(u.skills||'').split(',').map(x=>x.trim()).filter(Boolean);
         const eff=us.length?us:(u.role==='user'?['pa']:['pa','meter']);
         let skillsCell;
         if(u.role==='super_admin'){ skillsCell='<td class="sub">All</td>'; }
-        else if(canRole){ skillsCell=`<td><label style="font-weight:400;margin-right:12px;white-space:nowrap"><input type="checkbox" class="skillChk" data-name="${esc(u.name)}" value="pa"${eff.includes('pa')?' checked':''}> PA</label><label style="font-weight:400;white-space:nowrap"><input type="checkbox" class="skillChk" data-name="${esc(u.name)}" value="meter"${eff.includes('meter')?' checked':''}> Meter</label></td>`; }
+        else if(canRole){ skillsCell=`<td><label style="font-weight:400;margin-right:12px;white-space:nowrap"><input type="checkbox" class="skillChk" data-name="${esc(u.name)}" value="pa"${eff.includes('pa')?' checked':''}> PA</label><label style="font-weight:400;white-space:nowrap"><input type="checkbox" class="skillChk" data-name="${esc(u.name)}" value="meter"${eff.includes('meter')?' checked':''}> Meter</label><label style="font-weight:400;white-space:nowrap;margin-left:12px"><input type="checkbox" class="skillChk" data-name="${esc(u.name)}" value="exit"${eff.includes('exit')?' checked':''}> Exit</label></td>`; }
         else { skillsCell=`<td class="sub">${eff.map(s=>skillLabel[s]||s).join(', ')}</td>`; }
         const sel=canRole && u.name.toLowerCase()!==USER.toLowerCase()
           ? `<td><select data-name="${esc(u.name)}" class="roleSel"><option value="user"${u.role==='user'?' selected':''}>User</option><option value="admin"${u.role==='admin'?' selected':''}>Admin</option><option value="super_admin"${u.role==='super_admin'?' selected':''}>Super Admin</option></select></td>`
           : (canRole?'<td class="sub">—</td>':'');
-        return `<tr><td>${esc(u.name)}</td><td><span class="rolechip ${u.role==='super_admin'?'role-super':u.role==='admin'?'role-admin':'role-user'}">${rl}</span></td>${skillsCell}${sel}</tr>`;}).join('')+'</table>';
+        const rm=canRole && u.name.toLowerCase()!==USER.toLowerCase() && u.role!=='super_admin'
+          ? `<button class="btn ghost userRemove" data-name="${esc(u.name)}" style="padding:6px 12px;font-size:13px;margin-left:8px">Remove</button>` : '';
+        return `<tr><td>${esc(u.name)}</td><td><span class="rolechip ${u.role==='super_admin'?'role-super':u.role==='admin'?'role-admin':'role-user'}">${rl}</span></td>${skillsCell}${sel.replace(/<\/td>$/, rm+'</td>')}</tr>`;}).join('')+'</table>';
+    document.querySelectorAll('.userRemove').forEach(b=>b.onclick=async()=>{
+      if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='Confirm remove';setTimeout(()=>{b.dataset.armed='';b.textContent='Remove';},4000);return;}
+      b.disabled=true;try{const r=await api('/api/admin/remove-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:b.dataset.name})});
+        if(!r.ok)throw new Error(r.error);toast(r.name+' removed ✓');loadUsers();}catch(e){toast('Failed: '+e.message);b.disabled=false;}});
     document.querySelectorAll('.roleSel').forEach(s=>s.onchange=async()=>{
       try{const r=await api('/api/admin/set-role',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:s.dataset.name,role:s.value})});
         if(!r.ok)throw new Error(r.error);toast('Role updated ✓');loadUsers();}catch(e){toast('Failed: '+e.message);}});
@@ -423,8 +611,14 @@ $('#addUserBtn').onclick=async()=>{
 
 /* ---------- boot ---------- */
 if(TOKEN&&USER){showApp();switchView(initialView());
-  api('/api/me').then(r=>{if(r&&r.ok){ROLE=r.role||ROLE;if(r.skills!==undefined)SKILLS=r.skills;localStorage.setItem('pa_role',ROLE);localStorage.setItem('pa_skills',SKILLS);applyUser();}}).catch(()=>{});
+  api('/api/me').then(r=>{if(r&&r.ok){ROLE=r.role||ROLE;if(r.skills!==undefined)SKILLS=r.skills;STORE.setItem('pa_role',ROLE);STORE.setItem('pa_skills',SKILLS);applyUser();}}).catch(()=>{});
 }else showLogin();
 </script>
+<script>(function(){var EYE="<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>",OFF="<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68\"/><path d=\"M6.61 6.61A13.53 13.53 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61\"/><path d=\"M14.12 14.12a3 3 0 1 1-4.24-4.24\"/><path d=\"m2 2 20 20\"/></svg>";
+document.querySelectorAll('input[type=password]').forEach(function(inp){inp.classList.add('pwf');
+var w=document.createElement('div');w.className='pw';inp.parentNode.insertBefore(w,inp);w.appendChild(inp);
+var b=document.createElement('button');b.type='button';b.className='pw-t';b.setAttribute('aria-label','Show password');b.setAttribute('aria-pressed','false');b.innerHTML=EYE;
+b.addEventListener('click',function(){var show=inp.type==='password';inp.type=show?'text':'password';b.setAttribute('aria-label',show?'Hide password':'Show password');b.setAttribute('aria-pressed',String(show));b.innerHTML=show?OFF:EYE;inp.focus();});
+w.appendChild(b);});})();</script>
 </body>
 </html>

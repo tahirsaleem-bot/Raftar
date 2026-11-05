@@ -183,7 +183,24 @@ async function listCycles(userName) {
   return [...new Set(rows.map(r => r.cycle).filter(Boolean))];
 }
 
+// Delete a login row from _Accounts. The person's own entries tab is left alone,
+// so removing access never destroys their logbook history.
+async function deleteAccount(name) {
+  const acc = await getAccount(name);
+  if (!acc) return false;
+  const sheets = api();
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: SHEET_ID, fields: 'sheets.properties' });
+  const tab = meta.data.sheets.find(s => s.properties.title === ACCOUNTS_TAB);
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SHEET_ID,
+    requestBody: { requests: [{ deleteDimension: { range: { sheetId: tab.properties.sheetId, dimension: 'ROWS', startIndex: acc.rowNumber - 1, endIndex: acc.rowNumber } } }] },
+  });
+  logger.info(`[pa] Account removed: ${acc.name}`);
+  return true;
+}
+
 module.exports = {
+  deleteAccount,
   SHEET_ID, HEADERS, cycleLabel, safeTabName,
   listUsers, ensureUserTab, appendEntry, getEntries, listCycles,
   getAccount, createAccount, countAccounts, listAccounts, setRole, setSkills,

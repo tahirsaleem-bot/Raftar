@@ -41,10 +41,63 @@ router.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', '..', 'public', 'people-analyzer', 'index.html'));
 });
 
+// ─── Email + password sign-in (2026-10-26) ───────────────────────────────────
+// Same Raftar account as the fleet dashboard and Exit Interviews; the password is
+// checked by the meter-reading service. An owner email maps to its existing named
+// account here (role, skills and logbook kept). Everyone else signs in under their
+// email, as a user whose skills follow the access given on the Users page.
+const OWNER_NAMES = (() => {
+  try { return JSON.parse(process.env.OPS_OWNER_NAMES || '{}'); } catch { return {}; }
+})();
+if (!Object.keys(OWNER_NAMES).length) OWNER_NAMES['tahir.saleem@niete.edu.pk'] = 'Tahir Saleem';
+const emailOfName = name => (name.includes('@') ? name : Object.keys(OWNER_NAMES).find(e => OWNER_NAMES[e] === name));
+const skillsFromApps = apps => (apps || []).filter(a => a === 'meter' || a === 'exit').join(',');
+
+router.post('/api/login-email', async (req, res) => {
+  try {
+    const email = String((req.body || {}).email || '').trim().toLowerCase();
+    const password = String((req.body || {}).password || '');
+    if (!email || !password) return res.status(400).json({ ok: false, error: 'Enter your email and password' });
+    if (!process.env.METER_ADMIN_KEY) return res.status(503).json({ ok: false, error: 'Sign-in is not set up' });
+    const v = await meter('/api/dashboard-users/verify', { method: 'POST', body: JSON.stringify({ email, password, app: 'any' }) });
+    if (!v.ok) {
+      logger.warn(`[pa] email sign-in failed for "${email}" (${v.reason || 'bad'})`);
+      return res.status(401).json({ ok: false, error: 'Email or password is incorrect.' });
+    }
+    const name = OWNER_NAMES[email] || email;
+    const acc = await logbook.getAccount(name);
+    const role = acc ? acc.role : 'user';
+    const skills = acc ? acc.skills : skillsFromApps(v.apps);
+    res.json({ ok: true, token: auth.makeToken(name), name: acc ? acc.name : name, role, skills, mustChange: !!v.mustChange });
+  } catch (e) {
+    logger.error('[pa] email login error: ' + e.message);
+    res.status(502).json({ ok: false, error: 'Sign-in service is not reachable. Try again in a minute.' });
+  }
+});
+
+// "Set your own password" after signing in with the emailed one (meter-reading re-checks it)
+router.post('/api/change-password', requireAuth, async (req, res) => {
+  try {
+    const email = emailOfName(req.userName);
+    if (!email) return res.status(400).json({ ok: false, error: 'This account signs in with a PIN' });
+    const { current = '', newpw = '' } = req.body || {};
+    const r = await meter('/api/dashboard-users/change-password', { method: 'POST', body: JSON.stringify({ email, current: String(current), newpw: String(newpw) }) });
+    res.status(r.ok ? 200 : 400).json(r.ok ? { ok: true } : { ok: false, error: r.error || 'Could not change the password' });
+  } catch (e) {
+    res.status(502).json({ ok: false, error: 'Sign-in service is not reachable. Try again in a minute.' });
+  }
+});
+
 // Who am I (name + role) — used by the UI after login/refresh.
 router.get('/api/me', requireAuth, async (req, res) => {
   try {
     const acc = await logbook.getAccount(req.userName);
+    if (!acc && req.userName.includes('@')) {
+      // email user: skills follow their current access, and removal signs them out
+      const r = await meter('/api/dashboard-users/' + encodeURIComponent(req.userName) + '/apps');
+      if (!r.apps || !r.apps.length) return res.status(401).json({ ok: false, error: 'Please log in again' });
+      return res.json({ ok: true, name: req.userName, role: 'user', skills: skillsFromApps(r.apps) });
+    }
     res.json({ ok: true, name: req.userName, role: acc ? acc.role : 'user', skills: acc ? acc.skills : '' });
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
@@ -175,7 +228,7 @@ router.post('/api/admin/users', requireAuth, requireAdmin, async (req, res) => {
       return res.status(403).json({ ok: false, error: 'Only a Super Admin can assign admin roles' });
     }
     // Normalise assigned skills (default People Analyzer).
-    const ALLOWED = ['pa', 'meter'];
+    const ALLOWED = ['pa', 'meter', 'exit'];
     let skillsArr = Array.isArray(skills) ? skills : (typeof skills === 'string' ? skills.split(',') : []);
     skillsArr = skillsArr.map(s => String(s).trim()).filter(s => ALLOWED.includes(s));
     if (!skillsArr.length) skillsArr = ['pa'];
@@ -213,7 +266,7 @@ router.post('/api/admin/set-skills', requireAuth, requireAdmin, async (req, res)
     if (req.role !== 'super_admin') return res.status(403).json({ ok: false, error: 'Only a Super Admin can change skills' });
     let { name, skills } = req.body || {};
     name = (name || '').trim();
-    const ALLOWED = ['pa', 'meter'];
+    const ALLOWED = ['pa', 'meter', 'exit'];
     let arr = Array.isArray(skills) ? skills : (typeof skills === 'string' ? skills.split(',') : []);
     arr = arr.map(s => String(s).trim()).filter(s => ALLOWED.includes(s));
     if (!arr.length) return res.status(400).json({ ok: false, error: 'Select at least one skill' });
@@ -223,6 +276,73 @@ router.post('/api/admin/set-skills', requireAuth, requireAdmin, async (req, res)
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
   }
+});
+
+// Remove a user's login — super_admin only; never yourself or another Super Admin.
+router.post('/api/admin/remove-user', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    if (req.role !== 'super_admin') return res.status(403).json({ ok: false, error: 'Only a Super Admin can remove users' });
+    const name = String((req.body || {}).name || '').trim();
+    if (!name) return res.status(400).json({ ok: false, error: 'Name required' });
+    if (name.toLowerCase() === String(req.userName).toLowerCase()) return res.status(400).json({ ok: false, error: 'You cannot remove your own account' });
+    const acc = await logbook.getAccount(name);
+    if (!acc) return res.status(404).json({ ok: false, error: 'User not found' });
+    if (acc.role === 'super_admin') return res.status(400).json({ ok: false, error: 'Change their role first — a Super Admin cannot be removed' });
+    await logbook.deleteAccount(name);
+    res.json({ ok: true, name: acc.name });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// ─── Dashboard access (meter-reading dashboard email logins) ─────────────────
+// Super admin only. Proxies to the meter-reading service with the shared key,
+// so the key never reaches the browser.
+const METER_BASE = process.env.METER_DASHBOARD_BASE || 'https://meter-reading-production-2d7f.up.railway.app';
+function requireSuper(req, res, next) {
+  if (req.role !== 'super_admin') return res.status(403).json({ ok: false, error: 'Only a Super Admin can manage dashboard access' });
+  if (!process.env.METER_ADMIN_KEY) return res.status(503).json({ ok: false, error: 'METER_ADMIN_KEY is not set' });
+  next();
+}
+async function meter(pathname, opts = {}) {
+  const r = await fetch(METER_BASE + pathname, {
+    ...opts,
+    headers: { ...(opts.headers || {}), 'x-admin-key': process.env.METER_ADMIN_KEY, 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(30000),
+  });
+  if (r.status === 404) throw new Error('Dashboard service refused the request (key mismatch?)');
+  return r.json();
+}
+// ?app=meter (fleet dashboard, default) or ?app=exit (Exit Interviews) — same accounts, per-app access
+const appQ = req => (req.query.app === 'exit' ? 'exit' : 'meter');
+router.get('/api/admin/dashboard-users', requireAuth, requireAdmin, requireSuper, async (req, res) => {
+  try { res.json(await meter('/api/dashboard-users?app=' + appQ(req))); } catch (e) { res.status(502).json({ ok: false, error: e.message }); }
+});
+router.post('/api/admin/dashboard-users', requireAuth, requireAdmin, requireSuper, async (req, res) => {
+  try {
+    const email = String((req.body || {}).email || '').trim().toLowerCase();
+    res.json(await meter('/api/dashboard-users?app=' + appQ(req), { method: 'POST', body: JSON.stringify({ email, invitedBy: req.userName }) }));
+  } catch (e) { res.status(502).json({ ok: false, error: e.message }); }
+});
+router.delete('/api/admin/dashboard-users/:email', requireAuth, requireAdmin, requireSuper, async (req, res) => {
+  try { res.json(await meter('/api/dashboard-users/' + encodeURIComponent(req.params.email) + '?app=' + appQ(req), { method: 'DELETE' })); }
+  catch (e) { res.status(502).json({ ok: false, error: e.message }); }
+});
+
+// ─── Users page: one list, one "Add user" (email + ticks), one email per person ──
+const appsOf = body => (Array.isArray((body || {}).apps) ? body.apps.filter(a => a === 'meter' || a === 'exit') : []);
+router.get('/api/admin/raftar-users', requireAuth, requireAdmin, requireSuper, async (req, res) => {
+  try { res.json(await meter('/api/raftar-users')); } catch (e) { res.status(502).json({ ok: false, error: e.message }); }
+});
+router.post('/api/admin/raftar-users', requireAuth, requireAdmin, requireSuper, async (req, res) => {
+  try {
+    const email = String((req.body || {}).email || '').trim().toLowerCase();
+    res.json(await meter('/api/dashboard-users', { method: 'POST', body: JSON.stringify({ email, apps: appsOf(req.body), invitedBy: req.userName }) }));
+  } catch (e) { res.status(502).json({ ok: false, error: e.message }); }
+});
+router.post('/api/admin/raftar-users/:email/apps', requireAuth, requireAdmin, requireSuper, async (req, res) => {
+  try { res.json(await meter('/api/raftar-users/' + encodeURIComponent(req.params.email) + '/apps', { method: 'POST', body: JSON.stringify({ apps: appsOf(req.body) }) })); }
+  catch (e) { res.status(502).json({ ok: false, error: e.message }); }
 });
 
 module.exports = router;
