@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>People Analyzer Logbook</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#1a1d24; --card2:#22262f; --line:#2c313c;
+    --text:#e8eaed; --muted:#9aa0ac; --accent:#6c8cff; --accent2:#7c5cff;
+    --green:#34c759; --amber:#ffb020; --red:#ff5a5f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.5}
+  .wrap{max-width:680px;margin:0 auto;padding:16px 16px 60px}
+  header{display:flex;align-items:center;gap:10px;padding:14px 0 6px}
+  header h1{font-size:20px;margin:0;font-weight:700}
+  header .dot{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:flex;align-items:center;justify-content:center;font-size:16px}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+  input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);
+    border-radius:10px;padding:11px 12px;font-size:15px;font-family:inherit}
+  textarea{resize:vertical;min-height:90px}
+  .tabs{display:flex;gap:6px;margin:16px 0;background:var(--card);padding:5px;border-radius:12px}
+  .tabs button{flex:1;background:transparent;border:0;color:var(--muted);padding:9px;border-radius:9px;
+    font-size:14px;font-weight:600;cursor:pointer}
+  .tabs button.active{background:var(--card2);color:var(--text)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+  .rec-area{text-align:center;padding:10px 0}
+  .recbtn{width:96px;height:96px;border-radius:50%;border:0;cursor:pointer;font-size:34px;color:#fff;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 8px 24px rgba(108,140,255,.35);transition:transform .15s}
+  .recbtn:active{transform:scale(.95)}
+  .recbtn:disabled{opacity:.5;cursor:not-allowed}
+  .recbtn.recording{background:linear-gradient(135deg,var(--red),#ff8a5a);animation:pulse 1.3s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,90,95,.5)}70%{box-shadow:0 0 0 18px rgba(255,90,95,0)}100%{box-shadow:0 0 0 0 rgba(255,90,95,0)}}
+  .hint{color:var(--muted);font-size:13px;margin-top:12px;min-height:18px}
+  .btn{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:11px 16px;font-size:15px;font-weight:600;cursor:pointer}
+  .btn.ghost{background:var(--card2);border:1px solid var(--line);color:var(--text)}
+  .btn.green{background:var(--green)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .row > *{flex:1}
+  .pill{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--muted)}
+  .entry{border-bottom:1px solid var(--line);padding:12px 0}
+  .entry:last-child{border-bottom:0}
+  .entry .meta{font-size:12px;color:var(--muted);margin-bottom:4px;display:flex;gap:8px;align-items:center}
+  .val{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;background:var(--card2)}
+  .val h3{margin:0 0 4px;font-size:15px}
+  .val .def{color:var(--muted);font-size:12px;margin-bottom:8px}
+  .rating{font-weight:800;border-radius:8px;padding:2px 9px;font-size:14px}
+  .r-plus{background:rgba(52,199,89,.18);color:var(--green)}
+  .r-pm{background:rgba(255,176,32,.18);color:var(--amber)}
+  .r-minus{background:rgba(255,90,95,.18);color:var(--red)}
+  .banner{border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600;margin-bottom:12px}
+  .banner.ok{background:rgba(52,199,89,.15);color:var(--green);border:1px solid rgba(52,199,89,.3)}
+  .banner.no{background:rgba(255,176,32,.15);color:var(--amber);border:1px solid rgba(255,176,32,.3)}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--card2);
+    border:1px solid var(--line);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;
+    transition:opacity .25s;pointer-events:none;z-index:20}
+  .toast.show{opacity:1}
+  .hide{display:none}
+  .spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;
+    border-radius:50%;animation:rot .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  .who{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin-bottom:6px}
+  .link{background:none;border:0;color:var(--accent);cursor:pointer;font-size:13px;padding:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="dot">🎙️</div><h1>People Analyzer Logbook</h1></header>
+
+  <!-- LOGIN -->
+  <section id="loginView">
+    <p class="sub">Log in with your name and a personal PIN. Your entries stay private to you.</p>
+    <div class="card">
+      <div class="field" style="margin-bottom:12px">
+        <label>Your name</label>
+        <input id="loginName" placeholder="e.g. Tahir Saleem" autocomplete="name">
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label>PIN (4-8 digits) — first time sets it, remember it</label>
+        <input id="loginPin" type="password" inputmode="numeric" placeholder="••••" autocomplete="off">
+      </div>
+      <button class="btn" id="loginBtn" style="width:100%">Log in / Sign up</button>
+      <div class="hint" id="loginMsg"></div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <section id="appView" class="hide">
+    <div class="who"><span>👤 Logged in as <b id="whoName"></b></span><button class="link" id="logoutBtn">Log out</button></div>
+
+    <div class="tabs">
+      <button data-tab="record" class="active">🎙️ Record</button>
+      <button data-tab="history">📖 History</button>
+      <button data-tab="generate">✨ Generate</button>
+    </div>
+
+    <!-- RECORD -->
+    <section id="tab-record">
+      <div class="card rec-area">
+        <div style="max-width:220px;margin:0 auto 14px">
+          <div class="field"><label style="text-align:left">Speaking language</label>
+            <select id="recLang">
+              <option value="ur-PK">Urdu (mix with English)</option>
+              <option value="en-US">English</option>
+              <option value="hi-IN">Hindi</option>
+            </select>
+          </div>
+        </div>
+        <button id="recBtn" class="recbtn">🎙️</button>
+        <div class="hint" id="recHint">Tap and start speaking — output will be in English</div>
+        <div id="liveText" class="sub" style="margin-top:8px;min-height:18px;font-style:italic"></div>
+      </div>
+      <div class="card hide" id="reviewCard">
+        <div class="field" style="margin-bottom:10px">
+          <label>Transcribed (English) — edit if needed</label>
+          <textarea id="entryText"></textarea>
+        </div>
+        <div class="row" style="margin-bottom:12px">
+          <div class="field"><label>Category</label>
+            <select id="entryCat"><option>Logistics</option><option>Admin</option><option>IT</option><option>Team</option><option>Other</option></select>
+          </div>
+          <div class="field"><label>Date</label><input type="date" id="entryDate"></div>
+        </div>
+        <div class="row">
+          <button class="btn green" id="saveBtn">💾 Save</button>
+          <button class="btn ghost" id="discardBtn">Discard</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="tab-history" class="hide">
+      <div class="card">
+        <div class="row" style="margin-bottom:12px">
+          <div class="field"><label>Cycle</label><select id="cycleFilter"><option value="">All cycles</option></select></div>
+          <button class="btn ghost" id="refreshBtn" style="flex:0 0 auto;align-self:flex-end">↻ Refresh</button>
+        </div>
+        <div id="entriesList"><p class="sub">Tap Refresh to load your entries.</p></div>
+      </div>
+    </section>
+
+    <!-- GENERATE -->
+    <section id="tab-generate" class="hide">
+      <div class="card">
+        <div class="row" style="margin-bottom:12px">
+          <div class="field"><label>Cycle to assess</label><select id="genCycle"><option value="">All cycles</option></select></div>
+          <button class="btn" id="genBtn" style="flex:0 0 auto;align-self:flex-end">✨ Generate</button>
+        </div>
+        <div id="genHint" class="sub">Generates ratings + evidence for the 6 values from your entries.</div>
+        <div id="genResult"></div>
+      </div>
+    </section>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+let TOKEN = localStorage.getItem('pa_token') || '';
+let USER = localStorage.getItem('pa_name') || '';
+const toast = m => { const t=$('#toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); };
+
+async function api(p,o={}){
+  o.headers = Object.assign({}, o.headers, TOKEN ? {Authorization:'Bearer '+TOKEN} : {});
+  const r = await fetch('/pa'+p, o);
+  if(r.status===401){ logout(); throw new Error('Session expired — log in again'); }
+  return r.json();
+}
+
+// ---------- Login ----------
+function showApp(){
+  $('#loginView').classList.add('hide'); $('#appView').classList.remove('hide');
+  $('#whoName').textContent = USER; $('#entryDate').value = new Date().toISOString().slice(0,10);
+}
+function showLogin(){ $('#appView').classList.add('hide'); $('#loginView').classList.remove('hide'); }
+function logout(){ TOKEN=''; USER=''; localStorage.removeItem('pa_token'); localStorage.removeItem('pa_name'); showLogin(); }
+$('#logoutBtn').onclick = logout;
+
+$('#loginBtn').onclick = async ()=>{
+  const name=$('#loginName').value.trim(); const pin=$('#loginPin').value.trim();
+  if(!name){ $('#loginMsg').textContent='Enter your name'; return; }
+  if(!/^\d{4,8}$/.test(pin)){ $('#loginMsg').textContent='PIN must be 4-8 digits'; return; }
+  $('#loginBtn').disabled=true; $('#loginMsg').innerHTML='<span class="spin"></span>Checking...';
+  try{
+    const r = await fetch('/pa/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,pin})}).then(x=>x.json());
+    if(!r.ok) throw new Error(r.error);
+    TOKEN=r.token; USER=r.name; localStorage.setItem('pa_token',TOKEN); localStorage.setItem('pa_name',USER);
+    $('#loginMsg').textContent=''; $('#loginPin').value=''; showApp();
+    toast(r.isNew ? 'Account created ✓' : 'Welcome back ✓');
+  }catch(e){ $('#loginMsg').textContent='⚠️ '+e.message; }
+  finally{ $('#loginBtn').disabled=false; }
+};
+$('#loginPin').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#loginBtn').click(); });
+
+// tabs
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  ['record','history','generate'].forEach(t=>$('#tab-'+t).classList.toggle('hide', t!==b.dataset.tab));
+  if(b.dataset.tab==='history') loadEntries();
+  if(b.dataset.tab==='generate') loadCycles('#genCycle');
+});
+
+// ---------- Speech to text (free: browser Web Speech API) ----------
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition=null, recording=false, spokenText='';
+const recBtn=$('#recBtn');
+if(!SR){ $('#recHint').textContent='⚠️ This browser has no speech recognition. Please use Google Chrome.'; recBtn.disabled=true; }
+
+function startListening(){
+  spokenText='';
+  recognition = new SR();
+  recognition.lang = $('#recLang').value || 'ur-PK';
+  recognition.continuous = true; recognition.interimResults = true;
+  recognition.onresult = e=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){ const t=e.results[i][0].transcript;
+      if(e.results[i].isFinal) spokenText += t+' '; else interim += t; }
+    $('#liveText').textContent = (spokenText+interim).trim();
+  };
+  recognition.onerror = e=>{
+    recording=false; recBtn.classList.remove('recording'); recBtn.textContent='🎙️';
+    const map={'not-allowed':'Mic permission blocked — allow it from the address bar 🔒 icon','no-speech':'No speech heard — try again','network':'Network issue — check internet','audio-capture':'No microphone found'};
+    $('#recHint').textContent='⚠️ '+(map[e.error]||e.error);
+  };
+  recognition.onend = async ()=>{
+    if(recording){ recording=false; recBtn.classList.remove('recording'); recBtn.textContent='🎙️'; }
+    const raw = spokenText.trim();
+    if(!raw){ $('#recHint').textContent='Nothing heard — tap and speak again'; return; }
+    $('#recHint').innerHTML='<span class="spin"></span>Converting to English...';
+    try{
+      const r = await api('/api/translate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:raw})});
+      if(!r.ok) throw new Error(r.error);
+      $('#entryText').value=r.entry; $('#entryCat').value=r.category||'Other';
+      $('#reviewCard').classList.remove('hide'); $('#recHint').textContent='Review & edit, then save'; $('#liveText').textContent='';
+    }catch(e){
+      $('#entryText').value=raw; $('#entryCat').value='Other';
+      $('#reviewCard').classList.remove('hide'); $('#recHint').textContent='Saved your words (English convert failed: '+e.message+')';
+    }
+  };
+  recognition.start();
+}
+recBtn.onclick = ()=>{
+  if(!SR) return;
+  if(!recording){
+    try{ startListening(); recording=true; recBtn.classList.add('recording'); recBtn.textContent='⏹';
+      $('#recHint').textContent='Listening... tap to stop'; $('#liveText').textContent=''; }
+    catch(e){ $('#recHint').textContent='⚠️ '+(e.message||e.name); }
+  } else {
+    recording=false; recBtn.classList.remove('recording'); recBtn.textContent='🎙️';
+    $('#recHint').innerHTML='<span class="spin"></span>Converting to English...';
+    try{ recognition.stop(); }catch(e){}
+  }
+};
+$('#discardBtn').onclick=()=>{ $('#reviewCard').classList.add('hide'); $('#recHint').textContent='Tap to start recording'; };
+$('#saveBtn').onclick=async ()=>{
+  const entry=$('#entryText').value.trim(); if(!entry){ toast('Nothing to save'); return; }
+  $('#saveBtn').disabled=true;
+  try{
+    const r=await api('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({entry,category:$('#entryCat').value,date:$('#entryDate').value})});
+    if(!r.ok) throw new Error(r.error);
+    toast('Saved ✓'); $('#reviewCard').classList.add('hide'); $('#recHint').textContent='Saved! Record the next one.';
+  }catch(e){ toast('Save failed: '+e.message); } finally{ $('#saveBtn').disabled=false; }
+};
+
+// ---------- History ----------
+async function loadEntries(){
+  const list=$('#entriesList'); list.innerHTML='<p class="sub"><span class="spin"></span>Loading...</p>';
+  try{
+    const cyc=$('#cycleFilter').value;
+    const r=await api('/api/entries'+(cyc?'?cycle='+encodeURIComponent(cyc):''));
+    if(!r.ok) throw new Error(r.error);
+    const sel=$('#cycleFilter'); const cur=sel.value;
+    sel.innerHTML='<option value="">All cycles</option>'+r.cycles.map(c=>`<option>${c}</option>`).join(''); sel.value=cur;
+    if(!r.entries.length){ list.innerHTML='<p class="sub">No entries yet. Go record one!</p>'; return; }
+    list.innerHTML=r.entries.slice().reverse().map(e=>`<div class="entry">
+      <div class="meta"><span>${e.date}</span><span class="pill">${e.category||'—'}</span><span class="pill">${e.cycle}</span></div>
+      <div>${esc(e.entry)}</div></div>`).join('');
+  }catch(e){ list.innerHTML='<p class="sub">Error: '+e.message+'</p>'; }
+}
+$('#refreshBtn').onclick=loadEntries;
+$('#cycleFilter').onchange=loadEntries;
+async function loadCycles(sel){
+  try{ const r=await api('/api/entries'); if(!r.ok) return;
+    $(sel).innerHTML='<option value="">All cycles</option>'+r.cycles.map(c=>`<option>${c}</option>`).join('');
+  }catch(e){}
+}
+
+// ---------- Generate ----------
+$('#genBtn').onclick=async ()=>{
+  const res=$('#genResult'); $('#genBtn').disabled=true;
+  res.innerHTML='<p class="sub"><span class="spin"></span>Reading your entries and drafting evidence...</p>';
+  try{
+    const r=await api('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cycle:$('#genCycle').value})});
+    if(!r.ok) throw new Error(r.error);
+    renderAssessment(r);
+  }catch(e){ res.innerHTML='<p class="sub">Error: '+e.message+'</p>'; }
+  finally{ $('#genBtn').disabled=false; }
+};
+function rClass(x){ return x==='+'?'r-plus':x==='+/-'?'r-pm':'r-minus'; }
+function renderAssessment(r){
+  const s=r.summary;
+  const banner = s.benchmarkMet
+    ? `<div class="banner ok">✅ Benchmark Met — ${s.plus} "+", ${s.plusMinus} "+/-", ${s.minus} "-" (from ${s.entryCount} entries)</div>`
+    : `<div class="banner no">⚠️ Benchmark not met yet — ${s.plus} "+", ${s.plusMinus} "+/-", ${s.minus} "-" (need ≥4 "+", ≤2 "+/-", 0 "-")</div>`;
+  const vals=r.values.map(v=>`<div class="val">
+      <h3>${v.n}. ${esc(v.name)} <span class="rating ${rClass(v.rating)}">${v.rating}</span></h3>
+      <div class="def">${esc(v.def)}</div><div>${esc(v.evidence)}</div></div>`).join('');
+  $('#genResult').innerHTML = banner + vals + `<button class="btn" id="copyAll" style="margin-top:6px">📋 Copy all (for Markaz form)</button>`;
+  $('#copyAll').onclick=()=>{ const txt=r.values.map(v=>`${v.n}. ${v.name}  [${v.rating}]\n${v.evidence}`).join('\n\n');
+    navigator.clipboard.writeText(txt).then(()=>toast('Copied ✓')); };
+}
+function esc(s){ return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+// ---------- boot ----------
+if(TOKEN && USER){ showApp(); } else { showLogin(); }
+</script>
+</body>
+</html>

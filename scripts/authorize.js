@@ -20,11 +20,18 @@ const TOKEN_PATH = path.join(__dirname, '..', 'credentials', 'google-token.json'
 const SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',
   'https://www.googleapis.com/auth/gmail.send',
+  // modify = create/apply labels; settings.basic = create filters (scripts/setup-gmail-labels.js)
+  'https://www.googleapis.com/auth/gmail.modify',
+  'https://www.googleapis.com/auth/gmail.settings.basic',
   'https://www.googleapis.com/auth/calendar.readonly',
   'https://www.googleapis.com/auth/calendar.events',
   'https://www.googleapis.com/auth/spreadsheets',
   'https://www.googleapis.com/auth/documents',
   'https://www.googleapis.com/auth/drive.readonly',
+  // drive.file lets an app write files it creates. Kept alongside drive.readonly on
+  // purpose: readonly is what lets us look up an existing folder by id, drive.file is what
+  // lets us drop a new file into it. Needed by the exit-interview agent.
+  'https://www.googleapis.com/auth/drive.file',
 ];
 
 async function main() {

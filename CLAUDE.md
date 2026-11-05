@@ -27,20 +27,20 @@ Raftar is a comprehensive field operations system for managing logistics, distan
 - **Approval:** Always preview + get explicit "yes" before executing
 
 ## 📁 How to Navigate This Project
-→ **First time?** Read this file, then `/INDEX.md`  
-→ **Need something?** Use `/INDEX.md` to find it  
-→ **Building a feature?** `/docs/patterns.md` → `/skills/[pattern].md` → `/src/[code]`  
+→ **First time?** Read this file, then `/.claude/INDEX.md`  
+→ **Need something?** Use `/.claude/INDEX.md` to find it  
+→ **Building a feature?** `/docs/patterns.md` → `/.claude/skills/[pattern].md` → `/src/[code]`  
 → **Debugging?** `/logs/` → `/docs/SCHEMA.md` → relevant skill file  
 
 ## 🔗 Quick Links by Task
 | Task | Go To |
 |------|-------|
-| WhatsApp integration | `/skills/whatsapp.md` + `src/whatsapp/` |
-| Google Sheets operations | `/skills/sheets.md` + `src/sheets/` |
-| Distance/route calculation | `/skills/distance.md` + `src/routes/` |
-| Fuel pricing logic | `/skills/fuel-pricing.md` + `src/routes/distanceCalculator.js` |
-| Image KM extraction | `/skills/vision.md` + `src/vision/` |
-| Scheduler patterns | `/skills/scheduler.md` + `src/scheduler/` |
+| WhatsApp integration | `/.claude/skills/whatsapp.md` + `src/whatsapp/` |
+| Google Sheets operations | `/.claude/skills/sheets.md` + `src/sheets/` |
+| Distance/route calculation | `/.claude/skills/distance.md` + `src/routes/` |
+| Fuel pricing logic | `/.claude/skills/fuel-pricing.md` + `src/routes/distanceCalculator.js` |
+| Image KM extraction | `/.claude/skills/vision.md` + `src/vision/` |
+| Scheduler patterns | `/.claude/skills/meter-reading-automation.md` + `src/scheduler/` |
 | Data structure & columns | `/docs/SCHEMA.md` (COMPLETE) |
 | All integrations list | `/docs/API.md` (COMPLETE) |
 | System architecture | `/docs/ARCHITECTURE.md` |

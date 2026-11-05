@@ -29,3 +29,6 @@ build/
 *.swo
 *~
 .env.example
+
+# Browser login session (cookies)
+.markaz_session/

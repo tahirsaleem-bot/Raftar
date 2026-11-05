@@ -7,6 +7,11 @@ const logger = require('../logger');
 const CREDENTIALS_PATH = path.join(__dirname, '..', '..', 'credentials', 'google-oauth-client.json');
 const TOKEN_PATH = path.join(__dirname, '..', '..', 'credentials', 'google-token.json');
 
+// The legacy "KM Records" sheet is optional and deprecated — the live KM data
+// goes to the Niete dedicated fleet (logistics) sheet. If GOOGLE_SHEET_ID isn't
+// set, skip these writes silently instead of erroring on every image.
+const KM_RECORDS_ENABLED = !!(config.google && config.google.sheetId);
+
 // ─── Google Sheets Auth (OAuth — same token used for Gmail + Calendar) ────────
 function getAuthClient() {
   if (!fs.existsSync(CREDENTIALS_PATH)) throw new Error('OAuth credentials not found. Run: node scripts/authorize.js');
@@ -35,6 +40,7 @@ const COLUMNS = ['Date', 'Team Member', 'Phone', 'KM', 'Source Message', 'Submit
 
 // ─── Ensure Header Row Exists ─────────────────────────────────────────────────
 async function ensureHeaders() {
+  if (!KM_RECORDS_ENABLED) return;
   try {
     const sheets = await getSheet();
     const res = await sheets.spreadsheets.values.get({
@@ -58,6 +64,7 @@ async function ensureHeaders() {
 
 // ─── Write a new KM record ────────────────────────────────────────────────────
 async function writeKMRecord(record) {
+  if (!KM_RECORDS_ENABLED) return { success: true, skipped: true };
   try {
     const sheets = await getSheet();
     const row = recordToRow(record);
@@ -80,6 +87,7 @@ async function writeKMRecord(record) {
 
 // ─── Check if a record already exists for member + date ──────────────────────
 async function recordExists(teamMember, date) {
+  if (!KM_RECORDS_ENABLED) return null;
   try {
     const rows = await getAllRows();
     return rows.find(r => r.teamMember === teamMember && r.date === date) || null;
@@ -91,6 +99,7 @@ async function recordExists(teamMember, date) {
 
 // ─── Update an existing record (for duplicate latest policy) ─────────────────
 async function updateKMRecord(teamMember, date, updatedRecord) {
+  if (!KM_RECORDS_ENABLED) return { success: true, skipped: true };
   try {
     const sheets = await getSheet();
     const rows = await getAllRowsRaw();

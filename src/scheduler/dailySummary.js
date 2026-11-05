@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const { sendEmail } = require('../gmail/gmailClient');
-const { getAllRows, todaySheetDate } = require('../sheets/logisticsClient');
+const { getAllRows, todayISO, sameDate } = require('../sheets/logisticsClient');
 const { HUB_GROUPS } = require('../config/hubGroups');
 const logger = require('../logger');
 
@@ -13,7 +13,7 @@ async function runDailySummary() {
     return;
   }
 
-  const dateStr = todaySheetDate(TIMEZONE);
+  const dateStr = todayISO(TIMEZONE);
   logger.info(`[summary] Building daily summary for ${dateStr}`);
 
   let rows;
@@ -24,7 +24,10 @@ async function runDailySummary() {
     return;
   }
 
-  const todayRows = rows.filter(r => (r[1] || '').trim() === dateStr);
+  // Must compare parsed calendar dates, not raw strings: the sheet displays
+  // MM-DD-YYYY while dateStr is ISO, so an exact compare matched nothing and
+  // the summary always reported every hub as missing.
+  const todayRows = rows.filter(r => sameDate((r[1] || '').trim(), dateStr));
   const allHubs = HUB_GROUPS.map(h => h.hubName);
 
   const fpuHubs = todayRows

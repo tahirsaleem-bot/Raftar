@@ -10,7 +10,7 @@ module.exports = {
   },
   gemini: {
     apiKey: process.env.GEMINI_API_KEY || '',
-    model: process.env.GEMINI_MODEL || 'gemini-1.5-flash',
+    model: process.env.GEMINI_MODEL || 'gemini-pro-vision',
   },
   whatsapp: {
     apiBaseUrl: process.env.WHATSAPP_API_URL || 'http://localhost:3000',

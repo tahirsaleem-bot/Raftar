@@ -1,0 +1,10 @@
+# Railway CLI upload excludes (in addition to .gitignore).
+# .markaz_session is a local Markaz browser profile: large, and holds a login
+# session that must never be shipped to the server.
+.markaz_session
+logs
+output
+.wwebjs_cache
+_archive
+*.log
+*.pdf
