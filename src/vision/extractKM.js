@@ -60,6 +60,8 @@ async function getDigitWorker() {
   return digitWorkerPromise;
 }
 
+const DRUM_HUBS = new Set(['Gulraiz car chowk']);
+
 // ─── Extract KM/odometer reading from an image ────────────────────────────────
 // Claude vision first when a credential is configured — it can tell the amber
 // LCD from the analog dial, which is the one thing Tesseract reliably gets
@@ -86,6 +88,22 @@ async function extractKMFromImage(imageBuffer, senderName = 'Unknown', opts = {}
   // segment digits — on 2026-10-20 it failed 8 of 9 hub photos and misread the
   // ninth — so hub photos are read ONLY by readSevenSeg, which refuses rather
   // than guesses. A refusal leaves the cell blank for manual entry.
+  // Gulraiz's car has a mechanical drum odometer, not the amber LCD (2026-11-06)
+  if (DRUM_HUBS.has(opts.hubName)) {
+    try {
+      const r = await require('./readDrum').readDrum(imageBuffer);
+      if (r.ok) {
+        logger.info(`[vision] KM=${r.km} via drum odometer reader for ${senderName}`);
+        return { success: true, km: r.km, confidence: 'high', source: 'drum' };
+      }
+      logger.info(`[vision] Drum reader declined for ${senderName}: ${r.reason}`);
+      return { success: false, reason: `Drum odometer not readable: ${r.reason} — needs manual entry` };
+    } catch (err) {
+      logger.warn(`[vision] Drum reader errored for ${senderName}: ${err.message}`);
+      return { success: false, reason: `Drum reader error: ${err.message} — needs manual entry` };
+    }
+  }
+
   try {
     const { readMeter } = require('./readSevenSeg');
     const r = await readMeter(imageBuffer, { integer: opts.meterType === 'odometer' });

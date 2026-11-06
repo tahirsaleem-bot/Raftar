@@ -14,9 +14,12 @@ const { buildTemplates, classify, loadAll } = require('./drum6.js');
     const CW = 22, CH = 34, PAD = 3, WW = 28;
     const centre = v => { const p = new Float32Array(CW * CH); for (let y = 0; y < CH; y++) for (let x = 0; x < CW; x++) p[y * CW + x] = v[(y + PAD) * WW + x + PAD]; return p; };
     for (const d of train) if (!d.full5) (ex5[d.t[4]] = ex5[d.t[4]] || []).push(norm(centre(d.cells[4])));
+    const { profile } = require('./shape.js'); const SHAPE = { '0': 'LR LR LR', '6': 'L LMR LR', '8': 'LR LMR LR', '9': 'LR LMR R' };
     let txt = '', why = '';
     for (let c = 0; c < 5 && !why; c++) {
-      const o = classify(data[k].cells[c], c < 4 ? ex : ex5), m = o[0][1] - o[1][1];
+      const o = classify(data[k].cells[c], c < 4 ? ex : ex5); let m = o[0][1] - o[1][1];
+      if (c < 4 && SHAPE[o[0][0]] && SHAPE[o[1][0]]) { const p = profile(data[k].cells[c]); if (p === SHAPE[o[1][0]] && p !== SHAPE[o[0][0]]) { o.unshift(o.splice(1, 1)[0]); m = MARGIN; } else if (p === SHAPE[o[0][0]]) m = Math.max(m, MARGIN); else { why = 'd' + (c + 1) + ' shape ' + p + ' fits neither ' + o[0][0] + '/' + o[1][0]; break; } }
+      else if (c < 4 && SHAPE[o[0][0]]) { const p = profile(data[k].cells[c]); const other = Object.keys(SHAPE).find(d => d !== o[0][0] && SHAPE[d] === p); if (other) { why = 'd' + (c + 1) + ' looks ' + o[0][0] + ' but shape of ' + other; break; } }
       if (o[0][1] >= (c < 4 ? ABS : ABS5) && m >= MARGIN) txt += o[0][0]; else why = `d${c + 1} ${o[0][0]}${o[0][1].toFixed(2)}/${o[1][0]}${o[1][1].toFixed(2)}`;
     }
     const good = !why && Math.abs(+txt - +data[k].t) <= 0;
