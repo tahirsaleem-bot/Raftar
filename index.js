@@ -2081,6 +2081,9 @@ async function start() {
   // 11:00 / 18:30 "these readings are blank" email + fix-by-reply
   require('./src/services/readingsMail').startReadingsMail();
 
+  // Gulraiz drum reader: learn from refused photos once the sheet has the day's reading
+  require('./src/vision/drumLearn').startDrumLearning();
+
   // Initialize WhatsApp (shows QR code on first run)
   logger.info('[app] Initializing WhatsApp...');
   initWhatsApp();

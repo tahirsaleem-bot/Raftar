@@ -18,8 +18,11 @@ const fs = require('fs');
 const path = require('path');
 
 const DRUM_DIR = path.join(__dirname, 'drum');
+// labels learnt on the server (src/vision/drumLearn.js) live on the volume, next to the shipped ones
+const LEARNT_DIR = path.join(__dirname, '..', '..', 'credentials', 'drum_labels');
 const CW = 22, CH = 34, PAD = 3, WW = CW + 2 * PAD, HH = CH + 2 * PAD;
 const ABS = 0.88, ABS_LAST = 0.85, MARGIN = 0.04;
+const LAST_CONF = new Set(['0', '3', '5', '6', '8', '9']);
 const SHAPE = { 0: 'LR LR LR', 5: 'L LMR R', 6: 'L LMR LR', 8: 'LR LMR LR', 9: 'LR LMR R' };
 
 function components(mask, W, H) {
@@ -47,14 +50,24 @@ async function findWindow(buf) {
   // "dark" relative to the dial: on a bright morning (2026-11-06) the window
   // was 75-115 against a 225 dial, so a fixed <90 cut it into pieces
   const sorted = Float32Array.from(L).sort(), dialL = sorted[Math.floor(sorted.length * 0.9)];
-  const th = Math.min(130, 0.58 * dialL);
-  const dark = new Uint8Array(W * H); for (let i = 0; i < W * H; i++) dark[i] = L[i] < th ? 1 : 0;
-  // bridge the bright digits inside the window (gaps up to 8 px along a row)
-  for (let y = 0; y < H; y++) { let last = -1; for (let x = 0; x < W; x++) { const i = y * W + x; if (dark[i]) { if (last >= 0 && x - last > 1 && x - last <= 8) for (let k = last + 1; k < x; k++) dark[y * W + k] = 1; last = x; } } }
+  const boxMean = c => { let t = 0, n = 0; for (let y = c.y0; y <= c.y1; y++) for (let x = c.x0; x <= c.x1; x++) { t += L[y * W + x]; n++; } return n ? t / n : 255; };
   const ring = c => { let s = 0, n = 0; for (let x = c.x0; x <= c.x1; x++) for (const y of [c.y0 - 6, c.y1 + 6]) if (y >= 0 && y < H) { s += L[y * W + x]; n++; } return n ? s / n : 0; };
-  const cand = components(dark, W, H)
-    .filter(c => c.w > 50 && c.w < 300 && c.w / c.h > 2.5 && c.w / c.h < 6 && c.n > 0.5 * c.w * c.h)
-    .map(c => ({ ...c, ring: ring(c) })).filter(c => c.ring > 140).sort((a, b) => b.n - a.n);
+  // several cut-offs: on a dim dial (17 Nov stand-in car, dial ~115 next to the window) the
+  // usual one joins the window to the dashboard; a lower one frees it
+  const cand = [];
+  for (const th of [Math.min(130, 0.58 * dialL), 0.45 * dialL, 0.36 * dialL]) {
+    const dark = new Uint8Array(W * H); for (let i = 0; i < W * H; i++) dark[i] = L[i] < th ? 1 : 0;
+    // bridge the bright digits inside the window (gaps up to 8 px along a row)
+    for (let y = 0; y < H; y++) { let last = -1; for (let x = 0; x < W; x++) { const i = y * W + x; if (dark[i]) { if (last >= 0 && x - last > 1 && x - last <= 8) for (let k = last + 1; k < x; k++) dark[y * W + k] = 1; last = x; } } }
+    for (const c of components(dark, W, H)) {
+      if (!(c.w > 50 && c.w < 300 && c.w / c.h > 2.5 && c.w / c.h < 6 && c.n > 0.5 * c.w * c.h)) continue;
+      const r = ring(c); if (r <= Math.max(100, 0.6 * dialL) && r <= 140) continue;
+      cand.push({ ...c, ring: r, mean: boxMean(c) });
+    }
+  }
+  // the odometer window is near-black behind its digits; printed dial text ("km/h") that
+  // bridges into a blob is mostly white dial inside its box
+  cand.sort((a, b) => a.mean - b.mean);
   if (!cand.length) return null;
   const c = cand[0], k = orig.bitmap.width / 800;
   return orig.crop(Math.round(c.x0 * k), Math.round(c.y0 * k), Math.round(c.w * k), Math.round(c.h * k)).resize(400, Jimp.AUTO);
@@ -129,10 +142,15 @@ async function loadTemplates(exclude) {
   if (templates && !exclude) return templates;
   const ex = {}, last = {};
   const add = (bank, dg, v) => (bank[dg] = bank[dg] || []).push(norm(patch(v, 0, 0)));
-  for (const f of fs.readdirSync(path.join(DRUM_DIR, 'labelled')).filter(f => f.endsWith('.png'))) {
+  const files = [];
+  for (const dir of [path.join(DRUM_DIR, 'labelled'), LEARNT_DIR]) {
+    if (!fs.existsSync(dir)) continue;
+    for (const f of fs.readdirSync(dir)) if (/^\d{5}_[fn]_.+\.png$/.test(f)) files.push([dir, f]);
+  }
+  for (const [dir, f] of files) {
     const [val, full] = f.split('_');
     if (val === exclude) continue;
-    const cells = cellsOf(await Jimp.read(path.join(DRUM_DIR, 'labelled', f)));
+    let cells; try { cells = cellsOf(await Jimp.read(path.join(dir, f))); } catch { continue; }
     for (let c = 0; c < 4; c++) add(ex, val[c], cells[c]);
     if (full === 'f') add(ex, val[4], cells[4]); else add(last, val[4], cells[4]);
   }
@@ -151,26 +169,42 @@ async function readDrum(buf, opts = {}) {
   const { ex, last } = await loadTemplates(opts.exclude);
   const cells = cellsOf(win);
   let text = '';
+  // A near-tie between exactly two digits in ONE of the first four drums is not
+  // settled here: both readings are handed back as candidates and the caller
+  // keeps one only if the sheet history allows just that one (extractKM.js).
+  let tie = null;
+  const tieOk = (o, c) => c < 4 && !tie && o[1][1] >= ABS - 0.06 && o[0][1] - o[1][1] < 0.06 && o[1][1] - (o[2] ? o[2][1] : 0) >= 0.04;
   for (let c = 0; c < 5; c++) {
     const o = rank(cells[c], c < 4 ? ex : last);
     if (opts.debug) console.log("cell", c + 1, profile(cells[c]), o.slice(0, 4).map(r => r[0] + r[1].toFixed(2)).join(" "));
     let [top, second] = o, margin = top[1] - second[1];
+    let veto = null;
     // the stroke profile is noisy, so it only settles close calls (42181 vs 42161: margin 0.02)
     if (c < 4 && SHAPE[top[0]] && margin < 0.06) {
       const p = profile(cells[c]);
       if (SHAPE[second[0]] && p === SHAPE[second[0]] && p !== SHAPE[top[0]]) { [top, second] = [second, top]; margin = MARGIN; }
       else if (p === SHAPE[top[0]]) margin = Math.max(margin, MARGIN);
-      else if (SHAPE[second[0]]) return { ok: false, reason: `digit ${c + 1}: shape ${p} fits neither ${top[0]} nor ${second[0]}` };
-      const other = Object.keys(SHAPE).find(d => d !== top[0] && SHAPE[d] === p);
-      if (other && p !== SHAPE[top[0]]) return { ok: false, reason: `digit ${c + 1} looks like ${top[0]} but has the shape of ${other}` };
+      else if (SHAPE[second[0]]) veto = `digit ${c + 1}: shape ${p} fits neither ${top[0]} nor ${second[0]}`;
+      const other = !veto && Object.keys(SHAPE).find(d => d !== top[0] && SHAPE[d] === p);
+      if (other && p !== SHAPE[top[0]]) veto = `digit ${c + 1} looks like ${top[0]} but has the shape of ${other}`;
     }
-    const clear = (top[1] >= (c < 4 ? ABS : ABS_LAST) && margin >= MARGIN) || (top[1] >= (c < 4 ? ABS : ABS_LAST) - 0.06 && margin >= 0.1);
+    // last drum: round digits (0 3 5 6 8 9) look alike there and it has no shape
+    // check, so between two of them demand a wide margin (10 Nov: 8 read as 6 at 0.87 vs 0.82)
+    const lastConf = c === 4 && LAST_CONF.has(top[0]) && LAST_CONF.has(second[0]) && margin < 0.1;
+    const clear = !veto && !lastConf && ((top[1] >= (c < 4 ? ABS : ABS_LAST) && margin >= MARGIN) || (top[1] >= (c < 4 ? ABS : ABS_LAST) - 0.06 && margin >= 0.1));
     if (!clear) {
-      return { ok: false, reason: `digit ${c + 1} unclear (${top[0]} ${top[1].toFixed(2)} vs ${second[0]} ${second[1].toFixed(2)})`, partial: text };
+      const reason = veto || `digit ${c + 1} unclear (${top[0]} ${top[1].toFixed(2)} vs ${second[0]} ${second[1].toFixed(2)})`;
+      if (tieOk(o, c)) { tie = { at: text.length, digits: [o[0][0], o[1][0]], reason }; text += '?'; continue; }
+      return { ok: false, reason, partial: text, win };
     }
     text += top[0];
   }
-  return { ok: true, km: parseInt(text, 10), text };
+  if (tie) {
+    const candidates = tie.digits.map(d => parseInt(text.slice(0, tie.at) + d + text.slice(tie.at + 1), 10));
+    return { ok: false, reason: `${tie.reason} (could be ${candidates.join(' or ')})`, candidates, win, partial: text.slice(0, tie.at) };
+  }
+  return { ok: true, km: parseInt(text, 10), text, win };
 }
 
-module.exports = { readDrum, findWindow };
+function resetTemplates() { templates = null; }
+module.exports = { readDrum, findWindow, resetTemplates, LEARNT_DIR };

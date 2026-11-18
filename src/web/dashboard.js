@@ -61,6 +61,13 @@ async function loadRows(lc) {
   return all;
 }
 
+
+// Dashboard car: the red sedan (src/web/sedanSvg.js) — desktop road ring and phone road strip
+const CAR_LOGOS = require('./carLogos');
+const sedan = require('./sedanSvg');
+const bigCar = sedan(CAR_LOGOS, 'a');
+const roadCar = sedan(CAR_LOGOS, 'b');
+
 async function render(req, opts = {}) {
   const today = logistics.todayISO();
   const fleetKey = req.query.fleet === 'rawalpindi' ? 'rawalpindi' : 'islamabad';
@@ -673,6 +680,30 @@ button.chip{cursor:pointer;font-family:inherit}
   .kpi-ring{grid-column:span 2}
   .hero-v{font-size:34px}
 }
+/* Car + road. Phones: a road strip under the header with the car crossing it.
+   Desktop: an asphalt ring round the screen; the page sits inside it and the car (seen from
+   above) drives the ring, taking the corners on a curve. Decorative only: aria-hidden, no clicks. */
+.road{position:relative;height:64px;overflow:hidden;background:#1F2432;box-shadow:inset 0 2px 0 rgba(255,255,255,.28),inset 0 -2px 0 rgba(255,255,255,.28)}
+.road::after{content:"";position:absolute;left:0;right:0;top:31px;height:2px;background:repeating-linear-gradient(90deg,rgba(254,240,138,.8) 0 22px,transparent 22px 44px);background-size:44px 2px;animation:lane 1s linear infinite}
+.road .car{position:absolute;left:0;top:4px;width:160px;height:57px;z-index:1;animation:drive 9s linear infinite;will-change:transform;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+.road .car svg,.lc svg{width:100%;height:100%;display:block}
+@keyframes drive{from{transform:translateX(-160px)}to{transform:translateX(calc(100vw + 10px))}}
+@keyframes lane{to{background-position:-44px 0}}
+@media (prefers-reduced-motion:reduce){.road .car{transform:translateX(16px)}}
+.loop,.lane,.lc{display:none}
+@media (min-width:900px){
+  body{padding:70px}
+  .top{top:70px}
+  .road{display:none}
+  .loop{display:block;position:fixed;inset:6px;border:64px solid #1F2432;border-radius:82px;box-shadow:0 0 0 2px rgba(255,255,255,.3),inset 0 0 0 2px rgba(255,255,255,.3),0 0 0 40px var(--bg);pointer-events:none;z-index:20}
+  .lane{display:block;position:fixed;inset:37px;border:2px dashed rgba(254,240,138,.75);border-radius:51px;pointer-events:none;z-index:20}
+  .lc{display:block;position:fixed;left:0;top:0;width:196px;height:70px;margin:-38px 0 0 -98px;pointer-events:none;z-index:21;will-change:transform;filter:drop-shadow(0 6px 8px rgba(0,0,0,.55))}
+  .lc .logos{transform-box:view-box;transform-origin:220px 93px}
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lc .wh,.road .wh{animation:spin .45s linear infinite}
+@media print{.loop,.lane,.lc,.road{display:none!important}body{padding:0!important}}
+@media (max-width:720px){.hero{grid-template-columns:1fr}.stage{height:170px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -691,8 +722,26 @@ button.chip{cursor:pointer;font-family:inherit}
     </div>
   </div>
 </header>
+<div class="loop" aria-hidden="true"></div><div class="lane" aria-hidden="true"></div>
+<div class="lc" aria-hidden="true">${bigCar}</div>
+<div class="road" aria-hidden="true"><div class="car">${roadCar}</div></div>
 <main>${body}</main>
 <footer class="foot"><span>Source: ${esc(lc.tab)} · Total = LDO − FPU</span><span>${opts.user ? esc(opts.user) + ' · ' : ''}<a href="/account" class="signout">Change password</a> · <a href="/logout" class="signout">Sign out</a></span></footer>
+<script>(function(){var c=document.querySelector('.lc');if(!c)return;var lg=c.querySelector('.logos');
+var mq=matchMedia('(min-width:900px)'),rm=matchMedia('(prefers-reduced-motion:reduce)');
+var SPEED=170,IN=38,R=51,A=Math.PI*R/2,d=0,last=0;
+// position + heading on a rounded rectangle (the road's centre line), clockwise from the top-left
+function at(t,W,H){var w=W-2*IN-2*R,h=H-2*IN-2*R,L=[w,A,h,A,w,A,h,A],i=0;
+ while(i<8&&t>L[i]){t-=L[i];i++}if(i>7){i=7;t=L[7]}
+ var l=IN,r=W-IN,tp=IN,b=H-IN,f=t/R;
+ switch(i){case 0:return[l+R+t,tp,0];case 1:return[r-R+R*Math.sin(f),tp+R-R*Math.cos(f),f*57.296];
+  case 2:return[r,tp+R+t,90];case 3:return[r-R+R*Math.cos(f),b-R+R*Math.sin(f),90+f*57.296];
+  case 4:return[r-R-t,b,180];case 5:return[l+R-R*Math.sin(f),b-R+R*Math.cos(f),180+f*57.296];
+  case 6:return[l,b-R-t,270];default:return[l+R-R*Math.cos(f),tp+R-R*Math.sin(f),270+f*57.296]}}
+function place(){var W=innerWidth,H=innerHeight,P=2*(W-2*IN-2*R)+2*(H-2*IN-2*R)+4*A,p=at(((d%P)+P)%P,W,H);
+ var h=p[2],k=h<=90?1:h<180?Math.cos(2*(h-90)/57.296):h<=270?-1:-Math.cos(2*(h-270)/57.296);c.style.transform='translate('+p[0]+'px,'+p[1]+'px) rotate('+p[2]+'deg) scaleY('+(Math.abs(k)<.08?(k<0?-.08:.08):k)+')';if(lg)lg.style.transform=k<0?'scaleX(-1)':'none'}
+function tick(ts){if(last&&mq.matches)d+=SPEED*Math.min(.05,(ts-last)/1000);last=ts;place();requestAnimationFrame(tick)}
+d=120;place();if(!rm.matches)requestAnimationFrame(tick);addEventListener('resize',place)})();</script>
 </body>
 </html>`;
 }

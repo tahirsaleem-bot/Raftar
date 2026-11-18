@@ -524,15 +524,22 @@ function readingFromText(text, meterType) {
 // annoyed them (Raftar, 2026-10-27). So the hub is first opened for a typed
 // reply and the question goes out only if nothing arrives within ASK_DELAY.
 const ASK_DELAY_MS = parseFloat(process.env.ASK_DRIVER_DELAY_MIN || '3') * 60 * 1000;
-function openForTyped(hubName, dateKey) {
+// partial = the number the reader saw on the refused photo (e.g. "129.6" with a stray mark).
+// A typed number that differs from it is not trusted (17 Nov: Tramri's driver typed "69" —
+// the day's total — right after a 129.6 photo, and it went into the sheet as the LDO).
+function openForTyped(hubName, dateKey, partial = null) {
   const cur = pendingAsks.get(hubName);
-  if (!cur || cur.dateKey !== dateKey) pendingAsks.set(hubName, { openedAt: Date.now(), dateKey });
-  else cur.openedAt = Date.now();
+  if (!cur || cur.dateKey !== dateKey) pendingAsks.set(hubName, { openedAt: Date.now(), dateKey, partial });
+  else { cur.openedAt = Date.now(); cur.partial = partial; }
   savePendingAsks();
+}
+function partialFrom(why) {
+  const m = String(why || '').match(/"(d{1,6}(?:.d)?)"/);
+  return m ? parseFloat(m[1]) : null;
 }
 function askDriverLater(hubName, chatId, dateKey, why, photoMsg) {
   if (process.env.ASK_DRIVER_ON_FAIL !== 'true') return;
-  openForTyped(hubName, dateKey);
+  openForTyped(hubName, dateKey, partialFrom(why));
   if (NO_ASK_HUBS.has(hubName)) { logger.info(`[whatsapp] ${hubName}: drum odometer — driver not asked, left for the email (${why})`); return; }
   const since = Date.now();
   setTimeout(() => {
@@ -631,6 +638,10 @@ async function handleTypedReading(msg) {
   const { dateKey } = localTimeParts(msg.timestamp * 1000);
   let { localHour } = localTimeParts(msg.timestamp * 1000);
   if (open && dateKey !== pending.dateKey) return;
+  if (open && pending.partial != null && Math.abs(km - pending.partial) >= 1) {
+    logger.info(`[whatsapp] ${hubName}: typed ${km} but the photo shows ${pending.partial} — likely a total or a different number, not written (left for the ask / email)`);
+    return;
+  }
   if (!open) {
     // unasked: fill a blank cell only, never overwrite a recorded LDO
     const lc = require('../sheets/logisticsClient').forHub(hubName);

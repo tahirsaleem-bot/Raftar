@@ -62,6 +62,39 @@ async function getDigitWorker() {
 
 const DRUM_HUBS = new Set(['Gulraiz car chowk']);
 
+// The drum reader hands back two candidates when one digit is a near-tie
+// (5 vs 6 on 6 Nov: 42572 or 42672). Keep a candidate only if it is not below
+// the last sheet reading and not further ahead than this car has ever gone:
+// same day (today's FPU -> LDO) max 120 km (record 107 in Sep-Nov); from the
+// last LDO to the next FPU max 130 km (record 108 overnight / over a weekend),
+// and only when every weekday in between is marked "off" in the sheet — a blank
+// day in between could hide a whole day's driving, so then we refuse.
+// Exactly one candidate must survive, else refuse.
+async function pickDrumCandidate(hubName, candidates) {
+  const L = require('../sheets/logisticsClient');
+  const C = L.forHub(hubName);
+  const last = await C.getLastReading(hubName);
+  if (!last || !last.iso) return null;
+  const today = L.todayISO();
+  const DAY = 86400000, t0 = Date.parse(last.iso), t1 = Date.parse(today);
+  if (!(t1 >= t0)) return null;
+  let maxAhead = 120;
+  if (t1 > t0) {
+    const rows = await C.getAllRows();
+    const target = hubName.trim().toLowerCase();
+    for (let t = t0 + DAY; t < t1; t += DAY) {
+      const wd = new Date(t).getUTCDay();
+      if (wd === 0 || wd === 6) continue;
+      const iso = new Date(t).toISOString().slice(0, 10);
+      const row = rows.find(r => (r[C.COL.hub] || '').trim().toLowerCase() === target && L.sameDate((r[C.COL.date] || '').trim(), iso));
+      if (!row || String(row[C.COL.fpu] || '').trim().toLowerCase() !== 'off') return null;
+    }
+    maxAhead = 130;
+  }
+  const ok = candidates.filter(k => k >= last.km && k - last.km <= maxAhead);
+  return ok.length === 1 ? { km: ok[0], ref: last.km, refDate: last.date } : null;
+}
+
 // ─── Extract KM/odometer reading from an image ────────────────────────────────
 // Claude vision first when a credential is configured — it can tell the amber
 // LCD from the analog dial, which is the one thing Tesseract reliably gets
@@ -94,9 +127,29 @@ async function extractKMFromImage(imageBuffer, senderName = 'Unknown', opts = {}
       const r = await require('./readDrum').readDrum(imageBuffer);
       if (r.ok) {
         logger.info(`[vision] KM=${r.km} via drum odometer reader for ${senderName}`);
+        require('./drumLearn').learnConfident(opts.hubName, imageBuffer, r.win, r.km).catch(() => {});
         return { success: true, km: r.km, confidence: 'high', source: 'drum' };
       }
+      if (r.candidates) {
+        const pick = await pickDrumCandidate(opts.hubName, r.candidates).catch(e => { logger.warn(`[vision] drum candidate check failed: ${e.message}`); return null; });
+        if (pick) {
+          logger.info(`[vision] KM=${pick.km} via drum odometer reader for ${senderName} (tie ${r.candidates.join('/')} settled by sheet: last ${pick.ref} on ${pick.refDate})`);
+          require('./drumLearn').learnConfident(opts.hubName, imageBuffer, r.win, pick.km).catch(() => {});
+          return { success: true, km: pick.km, confidence: 'high', source: 'drum' };
+        }
+      }
       logger.info(`[vision] Drum reader declined for ${senderName}: ${r.reason}`);
+      require('./drumLearn').rememberRefused(opts.hubName, imageBuffer, r).catch(() => {});
+      // Gulraiz sometimes sends a stand-in car with an amber LCD (16 Nov: "TRIP 5908.3"):
+      // give the LCD reader a go before giving up. It refuses outright on drum photos (no amber LCD).
+      try {
+        const lcd = await require('./readSevenSeg').readMeter(imageBuffer, { integer: false });
+        if (lcd.ok) {
+          logger.info(`[vision] KM=${lcd.km} via seven-segment LCD reader ("${lcd.text} km") for ${senderName} — stand-in car at a drum hub`);
+          return { success: true, km: lcd.km, confidence: 'high', source: 'sevenseg' };
+        }
+        logger.info(`[vision] LCD reader also declined for ${senderName}: ${lcd.reason}`);
+      } catch (e) { logger.warn(`[vision] LCD fallback errored for ${senderName}: ${e.message}`); }
       return { success: false, reason: `Drum odometer not readable: ${r.reason} — needs manual entry` };
     } catch (err) {
       logger.warn(`[vision] Drum reader errored for ${senderName}: ${err.message}`);
@@ -254,4 +307,4 @@ function normalizeNumber(raw) {
   return isNaN(n) ? null : n;
 }
 
-module.exports = { extractKMFromImage };
+module.exports = { extractKMFromImage, pickDrumCandidate };
