@@ -50,6 +50,7 @@ async function findWindow(buf) {
   // "dark" relative to the dial: on a bright morning (2026-11-06) the window
   // was 75-115 against a 225 dial, so a fixed <90 cut it into pieces
   const sorted = Float32Array.from(L).sort(), dialL = sorted[Math.floor(sorted.length * 0.9)];
+  const brightFrac = (c, t) => { let b = 0, n = 0; for (let y = c.y0; y <= c.y1; y++) for (let x = c.x0; x <= c.x1; x++) { if (L[y * W + x] > t) b++; n++; } return n ? b / n : 0; };
   const boxMean = c => { let t = 0, n = 0; for (let y = c.y0; y <= c.y1; y++) for (let x = c.x0; x <= c.x1; x++) { t += L[y * W + x]; n++; } return n ? t / n : 255; };
   const ring = c => { let s = 0, n = 0; for (let x = c.x0; x <= c.x1; x++) for (const y of [c.y0 - 6, c.y1 + 6]) if (y >= 0 && y < H) { s += L[y * W + x]; n++; } return n ? s / n : 0; };
   // several cut-offs: on a dim dial (17 Nov stand-in car, dial ~115 next to the window) the
@@ -62,6 +63,10 @@ async function findWindow(buf) {
     for (const c of components(dark, W, H)) {
       if (!(c.w > 50 && c.w < 300 && c.w / c.h > 2.5 && c.w / c.h < 6 && c.n > 0.5 * c.w * c.h)) continue;
       const r = ring(c); if (r <= Math.max(100, 0.6 * dialL) && r <= 140) continue;
+      // the window shows white digits: some, not most, of its box is bright (a glare or shadow
+      // blob has none — 19 Nov FPU photos; a patch of dial text is mostly white)
+      if (c.x0 <= 2 || c.x1 >= W - 3 || c.y0 <= 2 || c.y1 >= H - 3) continue; // cut off by the photo edge: not the window
+      const bf = brightFrac(c, 0.6 * dialL); if (bf > 0.5) continue;
       cand.push({ ...c, ring: r, mean: boxMean(c) });
     }
   }
